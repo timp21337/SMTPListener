@@ -33,10 +33,10 @@ public class SmtpListenerTest
     it.start();
     Thread.sleep(100);
     assertFalse(available(PORT));
-    Email toSend = new Email("sender@localhost", "root@localhost", "Subject", "Message body");
+    Email toSend = new Email("sender@smtplistener", "root@smtplistener", "Subject", "Message body");
 
     // Coverage is all
-    assertEquals(-79621412, toSend.hashCode());
+    assertEquals(-18618622, toSend.hashCode());
     Emailer.send(toSend);
 
     Thread.sleep(200);
