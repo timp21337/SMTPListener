@@ -12,25 +12,27 @@ import junit.framework.TestCase;
 public class SmtpListenerTest
     extends TestCase {
 
+  final static int PORT = 1616;
+
   public void testUsesPort() throws Exception {
-    assertTrue(available(1616));
+    assertTrue(available(PORT));
     SmtpListener listener = new SmtpListener(1616);
     Thread it = new Thread(listener);
     it.start();
     Thread.sleep(100);
-    assertFalse(available(1616));
+    assertFalse(available(PORT));
     listener.stopListening();
     Thread.sleep(100);
-    assertTrue(available(1616));
+    assertTrue(available(PORT));
   }
 
   public void testEmailCatch() throws Exception {
-    assertTrue(available(1616));
+    assertTrue(available(PORT));
     SmtpListener listener = new SmtpListener();
     Thread it = new Thread(listener);
     it.start();
     Thread.sleep(100);
-    assertFalse(available(1616));
+    assertFalse(available(PORT));
     Email toSend = new Email("sender@localhost", "root@localhost", "Subject", "Message body");
 
     // Coverage is all
@@ -38,9 +40,12 @@ public class SmtpListenerTest
     Emailer.send(toSend);
 
     Thread.sleep(200);
-    assertFalse(available(1616));
+    assertFalse(available(PORT));
     Email receivedEmail = listener.getEmail();
+    int goes = 0;
     while(receivedEmail == null) {
+      if (goes++ > 10)
+        fail("Maybe you have not configured your MTA to route localhost mails to " + PORT);
       Thread.sleep(50);
       System.err.println("Sleeping");
       receivedEmail = listener.getEmail();
