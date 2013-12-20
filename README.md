@@ -1,0 +1,4 @@
+smtplistener
+============
+
+An email catcher
