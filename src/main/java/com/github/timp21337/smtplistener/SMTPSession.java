@@ -229,6 +229,8 @@ public class SMTPSession implements Runnable {
               + content.getClass()
               + ": " + content);
       }
+    } else {
+      throw new RuntimeException("Unrecognised message content: " + content);
     }
     body = bodyText.toString();
   }
