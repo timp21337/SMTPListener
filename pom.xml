@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.github.timp21337</groupId>
@@ -43,4 +43,52 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <version>2.5.2</version>
+        <configuration>
+          <instrumentation>
+            <ignores>
+              <ignore>**Exception</ignore>
+            </ignores>
+            <excludes>
+              <exclude>**/*Exception.class</exclude>
+              <exclude>**/*ExitServlet.class</exclude>
+              <exclude>**/*CharData*</exclude>
+              <exclude reason="Just a toy">**/*JspServlet*</exclude>
+              <!--exclude reason="Not used">**/*PoemServletContextListener*</exclude-->
+              <exclude reason="Not committed yet">**/*CachingTemplateServlet*</exclude>
+              <exclude reason="Not used anywhere">**/AccessForbiddenToken.class</exclude>
+              <exclude reason="Not used anywhere">**/UnindexableLogEvent.class</exclude>
+              <exclude reason="Not used yet">**/XMLMarkupLanguage.class</exclude>
+              <exclude reason="Not completely tested unless set in config">**/velocity/*</exclude>
+              <exclude reason="Not completely tested unless set in config">**/freemarker/*</exclude>
+              <exclude reason="Not used yet">**/XMLAttributeMarkupLanguage.class</exclude>
+            </excludes>
+          </instrumentation>
+        </configuration>
+        <executions>
+          <execution>
+            <id>clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <version>2.5.2</version>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>
