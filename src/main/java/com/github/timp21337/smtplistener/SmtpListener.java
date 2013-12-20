@@ -73,7 +73,7 @@ public class SmtpListener implements Runnable {
     }
   }
 
-  public Email getEmail() {
+  public Email getLastEmailReceived() {
     return lastEmailReceived;
   }
 }
