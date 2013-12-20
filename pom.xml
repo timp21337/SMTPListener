@@ -8,7 +8,7 @@
   <packaging>jar</packaging>
 
   <name>smtplistener</name>
-  <url>http://maven.apache.org</url>
+  <url>http://jenkins.paneris.net/job/smtplistener/</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
