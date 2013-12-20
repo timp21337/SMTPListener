@@ -145,20 +145,26 @@ public class SMTPSession implements Runnable {
     body = null;
   }
 
+  private String clean(final String address) {
+    if (address.charAt(0) == '<') {
+      return address.substring(1, address.length() - 1);
+    }
+    return address;
+  }
+
+  private void toClient(String line) {
+    log_.debug(LogTracker.number(line));
+    toClient_.println(line);
+  }
+
   /**
    * Handle an SMTP <TT>MAIL FROM:</TT> command.
    *
    * @param addressFrom the address after the colon
    */
   private void mailFrom(String addressFrom) {
-    if (addressFrom.charAt(0) == '<') {
-      // hmm, not sure this actually happens
-      addressFrom = addressFrom.substring(1, addressFrom.length() - 1);
-    }
-
-    // at this stage we don't have a database name so we can't verify
-
-    sender = addressFrom;
+    sender = clean(addressFrom);
+    log_.debug(LogTracker.number("Recipient:" + recipient));
     toClient("250 " + addressFrom + "... Sender provisionally OK");
   }
 
@@ -169,13 +175,11 @@ public class SMTPSession implements Runnable {
    */
 
   private void rcptTo(String addressTo) throws Exception {
-    log_.debug(LogTracker.number("Recipient:" + addressTo));
-    if (addressTo.charAt(0) == '<') {
-      addressTo = addressTo.substring(1, addressTo.length() - 1);
-    }
+    recipient = clean(addressTo);
+    log_.debug(LogTracker.number("Recipient:" + recipient));
     toClient("250 Recipient OK");
-    recipient = addressTo;
   }
+
 
   /**
    * Handle an SMTP <TT>DATA</TT> command---post a message.
@@ -188,11 +192,6 @@ public class SMTPSession implements Runnable {
 
     toClient("250 " + messageId + " Message accepted for delivery");
     log_.debug(LogTracker.number("Accepted message from " + sender + " to " + recipient));
-  }
-
-  private void toClient(String line) {
-    log_.debug(LogTracker.number(line));
-    toClient_.println(line);
   }
 
   public void messageAccept(InputStream text) throws Exception {
