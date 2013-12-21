@@ -32,7 +32,8 @@ public class SmtpListenerTest
     while(it == null) {
       System.err.println("Goes:" + goes);
       if (goes++ > 10)
-        fail("Maybe you have not configured your MTA to route localhost mails to " + PORT);
+        fail("Maybe you have not configured your MTA to route "
+             "smtptlistener mails to " + PORT);
       Thread.sleep(50);
       System.err.println("Sleeping");
       it = listener.getLastEmailReceived();
@@ -47,7 +48,8 @@ public class SmtpListenerTest
     Thread.sleep(1);
 
     assertFalse(available(PORT));
-    Email toSend = new Email("sender@smtplistener", "root@smtplistener", "Subject", "Message body");
+    Email toSend = new Email("sender@smtplistener", 
+        "root@smtplistener", "Subject", "Message body");
 
     // Coverage is all
     assertEquals(-18618622, toSend.hashCode());
@@ -62,15 +64,18 @@ public class SmtpListenerTest
   }
 
 
-  /** Shows that this cannot be used, as is, for repeated tests, but it does inch the coverage up */
+  /** Shows that this cannot be used, as is, for repeated tests, 
+   *  but it does inch the coverage up.
+   */
   public void testNotRepeatable() throws Exception {
     assertTrue(available(PORT));
     SmtpListener listener = new SmtpListener();
     new Thread(listener).start();
     Thread.sleep(1);
     assertFalse(available(PORT));
-    for (int i = 1; i < 9; i++) {
-      Email toSend = new Email("sender" + i + "@smtplistener", "root@smtplistener", "Subject " + i, "Message body" + i);
+    for (int i = 1; i < 14; i++) {
+      Email toSend = new Email("sender" + i + "@smtplistener", 
+          "root@smtplistener", "Subject " + i, "Message body" + i);
 
       Emailer.send(toSend);
 
