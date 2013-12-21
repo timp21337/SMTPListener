@@ -33,7 +33,7 @@ public class SmtpListenerTest
       System.err.println("Goes:" + goes);
       if (goes++ > 10)
         fail("Maybe you have not configured your MTA to route "
-             "smtptlistener mails to " + PORT);
+             + "smtptlistener mails to " + PORT);
       Thread.sleep(50);
       System.err.println("Sleeping");
       it = listener.getLastEmailReceived();
