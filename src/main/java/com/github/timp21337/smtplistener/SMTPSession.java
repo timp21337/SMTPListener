@@ -25,7 +25,6 @@ public class SMTPSession implements Runnable {
 
   private static final Logger log_ = LoggerFactory.getLogger(SMTPSession.class);
   public static int BUFFER_SIZE = 65536;
-  public boolean initialised = false;
   private String smtpIdentifier_;
   private ServerSocket serverSocket_;
   private Socket clientSocket_;
@@ -131,7 +130,6 @@ public class SMTPSession implements Runnable {
         log_.error("Closing error:" + e.getMessage());
       }
     }
-    initialised = true;
   }
 
   /**

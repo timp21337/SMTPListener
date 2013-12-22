@@ -41,9 +41,7 @@ public class SmtpListener implements Runnable {
         log_.debug(LogTracker.number(
             "Starting new session:" + smtpListenerName + " on " + serverSocket));
         if (currentSession != null) {
-          if (currentSession.initialised) {
-            lastEmailReceived = currentSession.getEmail();
-          }
+          lastEmailReceived = currentSession.getEmail();
         }
         currentSession = new SMTPSession(smtpListenerName, serverSocket);
         log_.debug(LogTracker.number(currentSession.toString()));
