@@ -12,9 +12,14 @@ in /etc/hosts add:
 
 Postfix
 -------
+in /etc/postfix/main.cf add:
+
+    transport_maps = hash:/etc/postfix/transport
+
 in /etc/postfix/transport add:
 
     smtplistener smtp:localhost:1616
+
 
 then:
 
