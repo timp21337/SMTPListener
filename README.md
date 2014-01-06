@@ -6,7 +6,7 @@ An email catcher.
 Note that this requires configuring your MTA, so is nto trivial.
 Exim in particular is very fussy.
 
-DO NOT DEPLOY ON A MACHINE RESPONSIBLE FRO REAL MAIL.
+DO NOT DEPLOY ON A MACHINE RESPONSIBLE FOR REAL MAIL.
 
 
 Configuration
