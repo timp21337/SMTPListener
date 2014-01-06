@@ -41,7 +41,6 @@ public class DotTerminatedInputStream extends FilterInputStream {
     if (byte1_ == -1) {
       return super.read();
     }
-    System.err.println("It now:" + byte1_ +":");
     int it = byte1_;
     byte1_ = -1;
     return it;
