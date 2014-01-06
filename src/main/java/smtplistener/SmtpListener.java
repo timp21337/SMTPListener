@@ -1,4 +1,4 @@
-package com.github.timp21337.smtplistener;
+package smtplistener;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -15,37 +15,39 @@ public class SmtpListener implements Runnable {
 
   private static final Logger log_ = LoggerFactory.getLogger(SmtpListener.class);
   private static int arbetraryPortNumberOver1024 = 1616;
-  public boolean listening;
-  private int port;
-  private boolean listen = true;
-  private SMTPSession currentSession;
-  private ServerSocket serverSocket = null;
-  private Email lastEmailReceived;
+
+  private boolean listening_;
+
+  private int port_;
+  private boolean listen_ = true;
+  private SMTPSession currentSession_;
+  private ServerSocket serverSocket_ = null;
+  private Email lastEmailReceived_;
 
   public SmtpListener() {
     this(arbetraryPortNumberOver1024);
   }
 
   public SmtpListener(int port) {
-    this.port = port;
+    this.port_ = port;
   }
 
   @Override
   public void run() {
     try {
-      serverSocket = new ServerSocket(port);
+      serverSocket_ = new ServerSocket(port_);
       String smtpListenerName = "smtplistener."
           + InetAddress.getLocalHost().getHostName();
-      while (listen) {
-        listening = true;
+      while (listen_) {
+        setListening(true);
         log_.debug(LogTracker.number(
-            "Starting new session:" + smtpListenerName + " on " + serverSocket));
-        if (currentSession != null) {
-          lastEmailReceived = currentSession.getEmail();
+            "Starting new session:" + smtpListenerName + " on " + serverSocket_));
+        if (currentSession_ != null) {
+          lastEmailReceived_ = currentSession_.getEmail();
         }
-        currentSession = new SMTPSession(smtpListenerName, serverSocket);
-        log_.debug(LogTracker.number(currentSession.toString()));
-        new Thread(currentSession).run();
+        currentSession_ = new SMTPSession(smtpListenerName, serverSocket_);
+        log_.debug(LogTracker.number(currentSession_.toString()));
+        new Thread(currentSession_).run();
         log_.debug(LogTracker.number("Finished session"));
       }
       log_.debug(LogTracker.number("Finished serving"));
@@ -56,11 +58,11 @@ public class SmtpListener implements Runnable {
   }
 
   public void stopListening() {
-    listen = false;
-    if (serverSocket != null) {
+    listen_ = false;
+    if (serverSocket_ != null) {
       log_.debug(LogTracker.number("Closing socket"));
       try {
-        serverSocket.close();
+        serverSocket_.close();
       }
       catch (IOException e) {
         throw new RuntimeException(e);
@@ -72,6 +74,14 @@ public class SmtpListener implements Runnable {
   }
 
   public Email getLastEmailReceived() {
-    return lastEmailReceived;
+    return lastEmailReceived_;
+  }
+
+  public boolean isListening() {
+    return listening_;
+  }
+
+  private void setListening(final boolean listening) {
+    this.listening_ = listening;
   }
 }

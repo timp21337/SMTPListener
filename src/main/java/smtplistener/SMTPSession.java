@@ -1,4 +1,4 @@
-package com.github.timp21337.smtplistener;
+package smtplistener;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 /**
  * An SMTP session for receiving one or more incoming emails from a
  * client.
- *
+ * <p/>
  * One of these threads is spawned each time a mailer
  * connects to the socket.
  */
@@ -24,17 +24,17 @@ import org.slf4j.LoggerFactory;
 public class SMTPSession implements Runnable {
 
   private static final Logger log_ = LoggerFactory.getLogger(SMTPSession.class);
-  public static int BUFFER_SIZE = 65536;
+  public static final int BUFFER_SIZE = 65536;
   private String smtpIdentifier_;
   private ServerSocket serverSocket_;
   private Socket clientSocket_;
   private BufferedReader fromClient_;
   private PrintWriter toClient_;
   private PushbackInputStream fromClientPushBack_;
-  private String sender = null;
-  private String recipient = null;
-  private String subject = null;
-  private String body = null;
+  private String sender_ = null;
+  private String recipient_ = null;
+  private String subject_ = null;
+  private String body_ = null;
 
   /**
    * A handler for an SMTP session.
@@ -87,40 +87,51 @@ public class SMTPSession implements Runnable {
     reset();
     try {
       toClient("220 " + smtpIdentifier_ + " SMTP");
-      for (; ; ) {
+      boolean live = true;
+      while (live) {
         String command = fromClient_.readLine().trim();
 
-        if (command.regionMatches(true, 0, "HELO", 0, 4))
+        if (command.regionMatches(true, 0, "HELO", 0, 4)) {
           toClient("250 " + smtpIdentifier_);
-
-        else if (command.regionMatches(true, 0, "MAIL FROM:", 0, 10))
-          mailFrom(command.substring(10).trim());
-
-        else if (command.regionMatches(true, 0, "RCPT TO:", 0, 8))
-          rcptTo(command.substring(8).trim());
-
-        else if (command.regionMatches(true, 0, "DATA", 0, 4))
-          data();
-
-        else if (command.regionMatches(true, 0, "RSET", 0, 4)) {
-          reset();
-          toClient("250 Reset state");
         }
-
-        else if (command.regionMatches(true, 0, "QUIT", 0, 4)) {
-          toClient("221 " + smtpIdentifier_ + " closing connection");
-          break;
+        else {
+          if (command.regionMatches(true, 0, "MAIL FROM:", 0, 10)) {
+            mailFrom(command.substring(10).trim());
+          }
+          else {
+            if (command.regionMatches(true, 0, "RCPT TO:", 0, 8)) {
+              rcptTo(command.substring(8).trim());
+            }
+            else {
+              if (command.regionMatches(true, 0, "DATA", 0, 4)) {
+                data();
+              }
+              else {
+                if (command.regionMatches(true, 0, "RSET", 0, 4)) {
+                  reset();
+                  toClient("250 Reset state");
+                }
+                else {
+                  if (command.regionMatches(true, 0, "QUIT", 0, 4)) {
+                    toClient("221 " + smtpIdentifier_ + " closing connection");
+                    live = false;
+                  }
+                  // Not recognising EHLO is a good thing
+                  // does it matter that we don't do VRFY?
+                  else {
+                    toClient("500 Command unrecognized: \"" + command + "\"");
+                  }
+                }
+              }
+            }
+          }
         }
-        // Not recognising EHLO is a good thing
-        // does it matter that we don't do VRFY?
-        else
-          toClient("500 Command unrecognized: \"" + command + "\"");
       }
     }
     catch (Exception e) {
-      toClient("554 Sorry: something is wrong with this server---" +
-          e.getMessage().replace('\n', ' ').replace('\r', ' '));
-      log_.error("Post of message from `" + sender + "' failed:" + e.getMessage());
+      toClient("554 Sorry: something is wrong with this server---"
+          + e.getMessage().replace('\n', ' ').replace('\r', ' '));
+      log_.error("Post of message from `" + sender_ + "' failed:" + e.getMessage());
     }
     finally {
       try {
@@ -137,10 +148,10 @@ public class SMTPSession implements Runnable {
    */
 
   private void reset() {
-    sender = null;
-    recipient = null;
-    subject = null;
-    body = null;
+    sender_ = null;
+    recipient_ = null;
+    subject_ = null;
+    body_ = null;
   }
 
   private String clean(final String address) {
@@ -161,8 +172,8 @@ public class SMTPSession implements Runnable {
    * @param addressFrom the address after the colon
    */
   private void mailFrom(String addressFrom) {
-    sender = clean(addressFrom);
-    log_.debug(LogTracker.number("Recipient:" + recipient));
+    sender_ = clean(addressFrom);
+    log_.debug(LogTracker.number("Recipient:" + recipient_));
     toClient("250 " + addressFrom + "... Sender provisionally OK");
   }
 
@@ -173,11 +184,10 @@ public class SMTPSession implements Runnable {
    */
 
   private void rcptTo(String addressTo) throws Exception {
-    recipient = clean(addressTo);
-    log_.debug(LogTracker.number("Recipient:" + recipient));
+    recipient_ = clean(addressTo);
+    log_.debug(LogTracker.number("Recipient:" + recipient_));
     toClient("250 Recipient OK");
   }
-
 
   /**
    * Handle an SMTP <TT>DATA</TT> command---post a message.
@@ -189,7 +199,7 @@ public class SMTPSession implements Runnable {
     messageAccept(new DotTerminatedInputStream(fromClientPushBack_));
 
     toClient("250 " + messageId + " Message accepted for delivery");
-    log_.debug(LogTracker.number("Accepted message from " + sender + " to " + recipient));
+    log_.debug(LogTracker.number("Accepted message from " + sender_ + " to " + recipient_));
   }
 
   public void messageAccept(InputStream text) throws Exception {
@@ -197,10 +207,10 @@ public class SMTPSession implements Runnable {
         Session.getDefaultInstance(System.getProperties(), null),
         text);
 
-    subject =
-        message.getSubject() == null ?
-            "(no subject)" :
-            message.getSubject();
+    subject_ =
+        message.getSubject() == null
+            ? "(no subject_)"
+            : message.getSubject();
 
 
     StringBuffer bodyText = new StringBuffer(100);
@@ -218,22 +228,25 @@ public class SMTPSession implements Runnable {
 
         Object partContent = part.getContent();
 
-        if (partContent instanceof String &&
-            part.getFileName() == null)
+        if (partContent instanceof String
+            && part.getFileName() == null) {
           bodyText.append((String) partContent);
-        else
+        }
+        else {
           throw new RuntimeException("Attachment handling not implemented yet, you gave me a "
               + content.getClass()
               + ": " + content);
+        }
       }
-    } else {
+    }
+    else {
       throw new RuntimeException("Unrecognised message content: " + content);
     }
-    body = bodyText.toString();
+    body_ = bodyText.toString();
   }
 
   public Email getEmail() {
-    return new Email(sender, recipient, subject, body);
+    return new Email(sender_, recipient_, subject_, body_);
   }
 }
 

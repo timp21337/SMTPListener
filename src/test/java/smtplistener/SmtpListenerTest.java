@@ -1,4 +1,4 @@
-package com.github.timp21337.smtplistener;
+package smtplistener;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -49,16 +49,13 @@ public class SmtpListenerTest
 
     assertFalse(available(PORT));
     Email toSend = new Email("sender@smtplistener", 
-        "root@smtplistener", "Subject", "Message body");
-
-    // Coverage is all
-    assertEquals(-18618622, toSend.hashCode());
+        "root@smtplistener", "Subject", "Message body\r\nLine 2\r\nLine 3");
 
     Emailer.send(toSend);
 
     assertFalse(available(PORT));
     Email receivedEmail = fetchEmail(listener);
-    assertTrue(receivedEmail.toString(), receivedEmail.equals(toSend));
+    assertTrue(receivedEmail.toString() + "\n" + toSend.toString(), receivedEmail.equals(toSend));
     listener.stopListening();
     Thread.sleep(1);
   }

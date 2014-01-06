@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE suppressions PUBLIC
+"-//Puppy Crawl//DTD Suppressions 1.0//EN"
+"http://www.puppycrawl.com/dtds/suppressions_1_0.dtd">
+
+<suppressions>
+  <suppress checks="VisibilityModifier"
+    files=".*Tests?.java"/>
+
+  <suppress checks="MemberName"
+            files="(/|\\)test(/|\\)|(/|\\)integrationTests(/|\\)"/>
+  <suppress checks="LocalVariableName"
+            files="(/|\\)test(/|\\)|(/|\\)integrationTests(/|\\)"/>
+  <suppress checks="LocalFinalVariableName"
+            files="(/|\\)test(/|\\)|(/|\\)integrationTests(/|\\)"/>
+  <suppress checks="IllegalImport"
+            files="(/|\\)test(/|\\)|ClusterwideEvents|LoggerAdminController"/>
+  <suppress checks="HideUtilityClassConstructor"
+            files="(/|\\)test(/|\\)|(/|\\)integrationTests(/|\\)"/>
+  <suppress checks="MethodName"
+            files="Oauth2TokenRequest"/>
+  <suppress checks="MethodName"
+            files="TokenApiCommand"/>
+</suppressions>
