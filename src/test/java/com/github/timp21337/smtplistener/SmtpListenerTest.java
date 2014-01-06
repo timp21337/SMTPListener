@@ -66,14 +66,16 @@ public class SmtpListenerTest
 
   /** Shows that this cannot be used, as is, for repeated tests, 
    *  but it does inch the coverage up.
+   *
+   *  This test upsets exim, though fine with potfix.
    */
-  public void testNotRepeatable() throws Exception {
+  public void badTestNotRepeatable() throws Exception {
     assertTrue(available(PORT));
     SmtpListener listener = new SmtpListener();
     new Thread(listener).start();
     Thread.sleep(1);
     assertFalse(available(PORT));
-    for (int i = 1; i < 14; i++) {
+    for (int i = 1; i < 3; i++) {
       Email toSend = new Email("sender" + i + "@smtplistener", 
           "root@smtplistener", "Subject " + i, "Message body" + i);
 
@@ -82,8 +84,8 @@ public class SmtpListenerTest
       assertFalse(available(PORT));
       Email receivedEmail = fetchEmail(listener);
       // Neither assertion holds
-      //assertTrue(receivedEmail.toString().equals(toSend.toString()));
-      //assertFalse(receivedEmail.toString().equals(toSend.toString()));
+//      assertTrue(receivedEmail.toString().equals(toSend.toString()));
+//      assertFalse(receivedEmail.toString().equals(toSend.toString()));
     }
     listener.stopListening();
     Thread.sleep(1);
