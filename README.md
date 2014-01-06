@@ -51,3 +51,9 @@ in /etc/exim4/exim4.conf add in appropriate sections:
       port = 1616
 
 
+    begin retry
+    # Address or Domain    Error       Retries
+    # -----------------    -----       -------
+    smtplistener           *
+    *                      *           F,2h,15m; G,16h,1h,1.5; F,4d,6h
+
