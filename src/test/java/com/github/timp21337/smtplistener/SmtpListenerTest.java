@@ -19,10 +19,10 @@ public class SmtpListenerTest
     SmtpListener listener = new SmtpListener(1616);
     Thread it = new Thread(listener);
     it.start();
-    Thread.sleep(100);
+    Thread.sleep(1);  // slightly longer than yield()
     assertFalse(available(PORT));
     listener.stopListening();
-    Thread.sleep(100);
+    Thread.sleep(1);
     assertTrue(available(PORT));
   }
 
@@ -67,7 +67,7 @@ public class SmtpListenerTest
   /** Shows that this cannot be used, as is, for repeated tests, 
    *  but it does inch the coverage up.
    *
-   *  This test upsets exim, though fine with potfix.
+   *  This test upsets exim, though fine with postfix.
    */
   public void badTestNotRepeatable() throws Exception {
     assertTrue(available(PORT));
