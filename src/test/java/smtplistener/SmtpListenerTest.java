@@ -1,5 +1,6 @@
 package smtplistener;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 
@@ -14,12 +15,19 @@ public class SmtpListenerTest
 
   final static int PORT = 1616;
 
+  public void testStopListeningBeforeListening() {
+    SmtpListener listener = new SmtpListener(1616);
+    try {
+      listener.stopListening();
+      fail("Should have bombed");
+    } catch (RuntimeException e) {
+      e = null;
+    }
+  }
   public void testUsesPort() throws Exception {
     assertTrue(available(PORT));
     SmtpListener listener = new SmtpListener(1616);
-    Thread it = new Thread(listener);
-    it.start();
-    Thread.sleep(1);  // slightly longer than yield()
+    listener.startListening();
     assertFalse(available(PORT));
     listener.stopListening();
     Thread.sleep(1);
@@ -44,12 +52,12 @@ public class SmtpListenerTest
   public void testEmailCatch() throws Exception {
     assertTrue(available(PORT));
     SmtpListener listener = new SmtpListener();
-    new Thread(listener).start();
-    Thread.sleep(1);
+    listener.startListening();
 
     assertFalse(available(PORT));
-    Email toSend = new Email("sender@smtplistener", 
-        "root@smtplistener", "Subject", "Message body\r\nLine 2\r\nLine 3");
+    Email toSend = new Email("sender@smtplistener",
+        "root@smtplistener", "Subject", "Message body\r\nLine 2\r\nLine 3\r\n"
+        + ". a line starting with a dot but not the end of message\r\n");
 
     Emailer.send(toSend);
 
@@ -57,20 +65,46 @@ public class SmtpListenerTest
     Email receivedEmail = fetchEmail(listener);
     assertTrue(receivedEmail.toString() + "\n" + toSend.toString(), receivedEmail.equals(toSend));
     listener.stopListening();
-    Thread.sleep(1);
+    assertTrue(available(PORT));
+  }
+
+  public void testEmailWithAttachmentsDropped() throws Exception {
+    assertTrue(available(PORT));
+    SmtpListener listener = new SmtpListener();
+    listener.startListening();
+
+    assertFalse(available(PORT));
+    Email toSend = new Email("sender@smtplistener",
+        "root@smtplistener", "Subject", "Message body");
+    File [] attachments = new File[] {new File("README.md")};
+    Emailer.sendWithAttachments(
+        "localhost",
+        "sender@smtplistener",
+        "root@smtplistener",
+        "sender@smtplistener",
+        "Subject",
+        "Message body",
+        attachments);
+
+    assertFalse(available(PORT));
+    Email receivedEmail = fetchEmail(listener);
+    assertTrue(receivedEmail.toString() + "\n" + toSend.toString(), receivedEmail.equals(toSend));
+    listener.stopListening();
+
+    assertTrue(available(PORT));
   }
 
 
   /** Shows that this cannot be used, as is, for repeated tests, 
    *  but it does inch the coverage up.
    *
-   *  This test upsets exim, though fine with postfix.
+   *  Exim needs to have retrys configured off for this to work repeatedly,
+   *  see README.md.
    */
-  public void badTestNotRepeatable() throws Exception {
+  public void testNotRepeatable() throws Exception {
     assertTrue(available(PORT));
     SmtpListener listener = new SmtpListener();
-    new Thread(listener).start();
-    Thread.sleep(1);
+    listener.startListening();
     assertFalse(available(PORT));
     for (int i = 1; i < 3; i++) {
       Email toSend = new Email("sender" + i + "@smtplistener", 
@@ -85,7 +119,7 @@ public class SmtpListenerTest
 //      assertFalse(receivedEmail.toString().equals(toSend.toString()));
     }
     listener.stopListening();
-    Thread.sleep(1);
+    Thread.sleep(30);
   }
 
   /**
