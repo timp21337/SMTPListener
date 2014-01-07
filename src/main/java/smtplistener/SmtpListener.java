@@ -16,9 +16,8 @@ public class SmtpListener implements Runnable {
   private static final Logger log_ = LoggerFactory.getLogger(SmtpListener.class);
   private static int arbetraryPortNumberOver1024 = 1616;
 
-  private boolean listening_;
-
   private int port_;
+  private boolean listening_;
   private boolean listen_ = true;
   private SMTPSession currentSession_;
   private ServerSocket serverSocket_ = null;
@@ -57,19 +56,38 @@ public class SmtpListener implements Runnable {
     }
   }
 
+  public void startListening() {
+    listen_ = true;
+    new Thread(this).start();
+    while (!isListening()) {
+      try {
+        Thread.sleep(1);
+      }
+      catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+  }
+
   public void stopListening() {
-    listen_ = false;
-    if (serverSocket_ != null) {
+    if (listening_) {
+      listen_ = false;
       log_.debug(LogTracker.number("Closing socket"));
       try {
+        listening_ = false;
         serverSocket_.close();
+        Thread.sleep(1);
       }
       catch (IOException e) {
         throw new RuntimeException(e);
       }
+      catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
     }
     else {
-      log_.debug(LogTracker.number("Socket null"));
+      throw new RuntimeException("Called when not listening");
     }
   }
 
