@@ -12,6 +12,23 @@ import java.io.PushbackInputStream;
  * end-of-file, the underlying stream can be used again to read the
  * data from the dot-line up to its own end-of-file.
  *
+ *
+ *
+ * According to the SMTP standard RFC 5321, section 4.5.2:
+ *
+ *  http://tools.ietf.org/html/rfc5321#section-4.5.2
+ *
+ *  To allow all user composed text to be transmitted transparently,
+ *  the following procedures are used:
+ *
+ *   Before sending a line of mail text, the SMTP client checks the first character of the line.
+ *   If it is a period, one additional period is inserted at the beginning of the line.
+
+ *   When a line of mail text is received by the SMTP server, it checks the line.
+ *   If the line is composed of a single period, it is treated as the end of mail indicator.
+ *   If the first character is a period and there are other characters on the line,
+ *   the first character is deleted.
+ *
  * @author timp
  * @since 2013-12-18
  */
