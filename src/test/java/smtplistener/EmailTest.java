@@ -11,6 +11,8 @@ public class EmailTest extends TestCase{
   public void testEquals() throws Exception {
     Email it = new Email("from@example.com", "to@example.com", "Subject", "Body\nLine 2");
     assertTrue(it.equals(it));
+    it = new Email("from@example.com", "to@example.com", "Subject", "Body\nLine 2");
+    assertTrue(it.equals(it));
     assertFalse(it.equals(null));
     assertFalse(it.equals(new Object()));
     Email it2 = new Email("from@example.com", "to@example.com", "Subject", "Body\nLine 2");
@@ -25,6 +27,10 @@ public class EmailTest extends TestCase{
     Email emptyRecipient = new Email("from@example.com", null, "Subject", "Body\nLine 2");
     assertFalse(it.equals(emptyRecipient));
     assertFalse(emptyRecipient.equals(it));
+
+    Email emptySender = new Email(null, "to@example.com", "Subject", "Body\nLine 2");
+    assertFalse(it.equals(emptySender));
+    assertFalse(emptySender.equals(it));
 
     Email emptySubject = new Email("from@example.com", "to@example.com", null, "Body\nLine 2");
     assertFalse(it.equals(emptySubject));
@@ -42,5 +48,23 @@ public class EmailTest extends TestCase{
     assertEquals(0, empty.hashCode());
     Email it = new Email("to@example.com", "from@example.com", "Subject", "Body");
     assertEquals(-93518811, it.hashCode());
+  }
+
+  public void testSubjectMayNotContainLineBreak() {
+    try {
+      new Email("to@example.com", "from@example.com", "Subject\nwith a line break", "Body");
+      fail("Should have bombed");
+    } catch (IllegalArgumentException e) {
+      e = null; // expected
+    }
+
+  }
+  public void testMessageHasInitialDoubleDotsConverted() {
+    Email it = new Email("to@example.com", "from@example.com", "Subject", ".. dot on first line");
+    assertEquals(". dot on first line", it.getMessage());
+    it = new Email("to@example.com", "from@example.com", "Subject", ".. dot on first line\n"
+        + ".. and on second");
+    assertEquals(". dot on first line\n"
+        + ". and on second", it.getMessage());
   }
 }
