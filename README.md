@@ -3,7 +3,7 @@ smtplistener
 
 An email catcher.
 
-Note that this requires configuring your MTA, so is nto trivial.
+Note that this requires configuring your MTA, so is not trivial.
 Exim in particular is very fussy.
 
 DO NOT DEPLOY ON A MACHINE RESPONSIBLE FOR REAL MAIL.
@@ -40,15 +40,17 @@ in /etc/exim4/exim4.conf add in appropriate sections:
 
     domainlist relay_to_domains = smtplistener
 
-    send_to_smtplistener:
-       driver = manualroute
-       route_list = smtplistener localhost
-       transport = smtplistener_transport
-       self = send
+    begin routers
+      send_to_smtplistener:
+        driver = manualroute
+        route_list = smtplistener localhost
+        transport = smtplistener_transport
+        self = send
 
-    smtplistener_transport:
-      driver = smtp
-      port = 1616
+    begin transports
+      smtplistener_transport:
+        driver = smtp
+        port = 1616
 
 
     begin retry
