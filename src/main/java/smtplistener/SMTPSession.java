@@ -202,10 +202,9 @@ public class SMTPSession implements Runnable {
     log_.debug(LogTracker.number("Accepted message from " + sender_ + " to " + recipient_));
   }
 
-  public void messageAccept(InputStream text) throws Exception {
-    MimeMessage message = new MimeMessage(
-        Session.getDefaultInstance(System.getProperties(), null),
-        text);
+  public void messageAccept(DotTerminatedInputStream stream) throws Exception {
+    MimeMessage message =
+        new MimeMessage(Session.getDefaultInstance(System.getProperties(), null), stream);
 
     subject_ =
         message.getSubject() == null
@@ -228,12 +227,18 @@ public class SMTPSession implements Runnable {
 
         Object partContent = part.getContent();
 
-        if (partContent instanceof String
-            && part.getFileName() == null) {
-          bodyText.append((String) partContent);
+        if (partContent instanceof String) {
+          if (part.getFileName() == null) {
+            bodyText.append((String) partContent);
+          }
+          else {
+            log_.info("Attachment handling not implemented yet, you gave me a "
+                + content.getClass()
+                + ": " + content);
+          }
         }
         else {
-          throw new RuntimeException("Attachment handling not implemented yet, you gave me a "
+          log_.info("Attachment handling not implemented yet, you gave me a "
               + content.getClass()
               + ": " + content);
         }
