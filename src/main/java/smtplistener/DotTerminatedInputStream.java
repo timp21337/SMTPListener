@@ -7,7 +7,10 @@ import java.io.PushbackInputStream;
 /**
  * A stream comprising everything in an underlying stream up to the
  * first line containing only a fullstop.
- * <p/>
+ *
+ * That is a 5 character sequence of CRLF.CRLF
+ *
+ *
  * Once the <TT>DotTerminatedInputStream</TT> has reported
  * end-of-file, the underlying stream can be used again to read the
  * data from the dot-line up to its own end-of-file.
@@ -33,15 +36,23 @@ import java.io.PushbackInputStream;
  * @since 2013-12-18
  */
 public class DotTerminatedInputStream extends FilterInputStream {
+
+  private static final int UNDEFINED = -1;
+  // the states
   private static final int
-      TEXT = 0, FIRSTCR = 1, FIRSTNL = 2, DOT = 3, SECONDCR = 4, TERMINATED = 5,
+      TEXT = 0, FIRSTCR = 1, FIRSTLF = 2, THEDOT = 3, SECONDCR = 4, TERMINATED = 5,
       POP = 6;
-  private int state_ = FIRSTNL;
-  private int state1_ = -1;
-  private int byte1_ = -1;
-  private byte[] pushedBack_ = new byte[4];
-  private int pushedBackIn_ = 0;
-  private int pushedBackOut_ = 0;
+  private int state_ = FIRSTLF;
+  private int expectedState_ = UNDEFINED;
+  private int stashedByte_ = UNDEFINED;
+  private byte[] toPushBack_ = new byte[4];
+  private int toPushBackIndex_ = 0;
+  private int toPushBackDone_ = 0;
+
+  private static final byte CR = 13;
+  private static final byte LF = 10;
+  private static final byte DOT = 46;
+
 
   /**
    * @param in the underlying stream: must be a
@@ -55,45 +66,35 @@ public class DotTerminatedInputStream extends FilterInputStream {
   }
 
   private int superRead() throws IOException {
-    if (byte1_ == -1) {
+    if (stashedByte_ == UNDEFINED) {
       return super.read();
     }
-    int it = byte1_;
-    byte1_ = -1;
+    int it = stashedByte_;
+    stashedByte_ = UNDEFINED;
     return it;
   }
 
-  private void pushBack(byte b) {
-    if (pushedBackIn_ == pushedBack_.length) {
-      // in fact this doesn't happen
-      byte[] pushedBack = new byte[this.pushedBack_.length * 2];
-      System.arraycopy(this.pushedBack_, 0, pushedBack, 0, this.pushedBack_.length);
-      this.pushedBack_ = pushedBack;
-    }
-
-    pushedBack_[pushedBackIn_++] = b;
-  }
 
   /**
    * Read a character.
    *
-   * @return a character or -1 if terminated.
+   * @return a character or UNDEFINED if terminated.
    */
   public synchronized int read() throws IOException {
     int b;
     while (true) {
       switch (state_) {
         case TERMINATED:
-          pushedBack_ = null;
-          return -1;
+          toPushBack_ = null;
+          return UNDEFINED;
 
         case POP:
-          if (pushedBackOut_ < pushedBackIn_) {
-            return pushedBack_[pushedBackOut_++];
+          if (toPushBackDone_ < toPushBackIndex_) {
+            return toPushBack_[toPushBackDone_++];
           }
-          pushedBackOut_ = 0;
-          pushedBackIn_ = 0;
-          state_ = state1_;
+          toPushBackDone_ = 0;
+          toPushBackIndex_ = 0;
+          state_ = expectedState_;
           break;
 
         case TEXT:
@@ -101,15 +102,15 @@ public class DotTerminatedInputStream extends FilterInputStream {
           switch (b) {
             case '\r':
               state_ = FIRSTCR;
-              pushBack((byte) 13);
+              toPushBack_[toPushBackIndex_++] = CR;
               break;
             case '\n':
-              state_ = FIRSTNL;
-              pushBack((byte) 10);
+              state_ = FIRSTLF;
+              toPushBack_[toPushBackIndex_++] = LF;
               break;
-            case -1:
+            case UNDEFINED:
               state_ = POP;
-              state1_ = TERMINATED;
+              expectedState_ = TERMINATED;
               break;
             default:
               return b;
@@ -120,56 +121,56 @@ public class DotTerminatedInputStream extends FilterInputStream {
           b = superRead();
           switch (b) {
             case '\n':
-              state_ = FIRSTNL;
-              pushBack((byte) 10);
+              state_ = FIRSTLF;
+              toPushBack_[toPushBackIndex_++] = LF;
               break;
             case '\r':
               state_ = POP;
-              state1_ = TEXT;
-              byte1_ = '\r';
+              expectedState_ = TEXT;
+              stashedByte_ = '\r';
               break;
-            case -1:
+            case UNDEFINED:
               state_ = POP;
-              state1_ = TERMINATED;
+              expectedState_ = TERMINATED;
               break;
             default:
               state_ = POP;
-              state1_ = TEXT;
-              byte1_ = b;
+              expectedState_ = TEXT;
+              stashedByte_ = b;
               break;
           }
           break;
 
-        case FIRSTNL:
+        case FIRSTLF:
           b = superRead();
           switch (b) {
             case '.':
-              state_ = DOT;
-              pushBack((byte) 46);
+              state_ = THEDOT;
+              toPushBack_[toPushBackIndex_++] = DOT;
               break;
             case '\n':
               state_ = POP;
-              state1_ = TEXT;
-              byte1_ = '\n';
+              expectedState_ = TEXT;
+              stashedByte_ = '\n';
               break;
             case '\r':
               state_ = POP;
-              state1_ = TEXT;
-              byte1_ = '\r';
+              expectedState_ = TEXT;
+              stashedByte_ = '\r';
               break;
-            case -1:
+            case UNDEFINED:
               state_ = POP;
-              state1_ = TERMINATED;
+              expectedState_ = TERMINATED;
               break;
             default:
               state_ = POP;
-              state1_ = TEXT;
-              byte1_ = b;
+              expectedState_ = TEXT;
+              stashedByte_ = b;
               break;
           }
           break;
 
-        case DOT:
+        case THEDOT:
           b = superRead();
           switch (b) {
             case '\n':
@@ -178,14 +179,14 @@ public class DotTerminatedInputStream extends FilterInputStream {
             case '\r':
               state_ = SECONDCR;
               break;
-            case -1:
+            case UNDEFINED:
               state_ = POP;
-              state1_ = TERMINATED;
+              expectedState_ = TERMINATED;
               break;
             default:
               state_ = POP;
-              state1_ = TEXT;
-              byte1_ = b;
+              expectedState_ = TEXT;
+              stashedByte_ = b;
               break;
           }
           break;
@@ -198,7 +199,7 @@ public class DotTerminatedInputStream extends FilterInputStream {
           state_ = TERMINATED;
           break;
         default:
-          break;
+          throw new RuntimeException("Unexpected state:" + state_);
       }
     }
   }
@@ -212,34 +213,23 @@ public class DotTerminatedInputStream extends FilterInputStream {
     }
 
     int c = read();
-    if (c == -1) {
-      return -1;
+    if (c == UNDEFINED) {
+      return UNDEFINED;
     }
     b[off] = (byte) c;
 
     int i = 1;
     for (; i < len; i++) {
       c = read();
-      if (c == -1) {
+      if (c == UNDEFINED) {
         break;
       }
-      if (b != null) {
-        b[off + i] = (byte) c;
-      }
+      b[off + i] = (byte) c;
     }
     return i;
   }
 
-  /**
-   * Skip forward a number of characters.
-   *
-   * @return the actual number of characters skipped
-   * @see java.io.InputStream#skip(long)
-   */
   public synchronized long skip(long n) throws IOException {
-    while (n > 0L && read() != -1) {
-      --n;
-    }
-    return n;
+    throw new UnsupportedOperationException();
   }
 }
