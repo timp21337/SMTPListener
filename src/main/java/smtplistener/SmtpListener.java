@@ -67,13 +67,12 @@ public class SmtpListener implements Runnable {
         throw new RuntimeException(e);
       }
     }
-
+    log_.debug(LogTracker.number("Started listening"));
   }
 
   public void stopListening() {
     if (listening_) {
       listen_ = false;
-      log_.debug(LogTracker.number("Closing socket"));
       try {
         listening_ = false;
         serverSocket_.close();
@@ -85,6 +84,7 @@ public class SmtpListener implements Runnable {
       catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
+      log_.debug(LogTracker.number("Stopped listening"));
     }
     else {
       throw new RuntimeException("Called when not listening");
