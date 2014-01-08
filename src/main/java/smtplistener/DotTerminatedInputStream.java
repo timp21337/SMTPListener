@@ -82,15 +82,20 @@ public class DotTerminatedInputStream extends FilterInputStream {
    */
   public synchronized int read() throws IOException {
     int b;
-    while (true) {
+    int result = UNDEFINED;
+    boolean done = false;
+    while (!done) {
       switch (state_) {
         case TERMINATED:
           toPushBack_ = null;
-          return UNDEFINED;
-
+          result = UNDEFINED;
+          done = true;
+          break;
         case POP:
           if (toPushBackDone_ < toPushBackIndex_) {
-            return toPushBack_[toPushBackDone_++];
+            result = toPushBack_[toPushBackDone_++];
+            done = true;
+            break;
           }
           toPushBackDone_ = 0;
           toPushBackIndex_ = 0;
@@ -113,7 +118,9 @@ public class DotTerminatedInputStream extends FilterInputStream {
               expectedState_ = TERMINATED;
               break;
             default:
-              return b;
+              done = true;
+              result = b;
+              break;
           }
           break;
 
@@ -202,13 +209,21 @@ public class DotTerminatedInputStream extends FilterInputStream {
           throw new RuntimeException("Unexpected state:" + state_);
       }
     }
+    if (result < 14)
+      System.err.println(result);
+    else
+      System.err.print((char)result);
+    return result;
   }
 
   /**
    * Read some characters.
    */
   public synchronized int read(byte[] b, int off, int len) throws IOException {
-    if (len <= 0) {
+    if (len < 0) {
+      throw new IllegalArgumentException("Length:" + len);
+    }
+    if (len == 0) {
       return 0;
     }
 
