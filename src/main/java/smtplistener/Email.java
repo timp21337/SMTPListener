@@ -127,7 +127,7 @@ public class Email {
 
     Message(String it) {
       if (it != null) {
-        this.it_ = it.replaceFirst("^\\.\\.", ".").replaceAll("\n\\.\\.", "\n.");
+        this.it_ = it.replaceFirst("^\\.\\.", ".").replaceAll("\n\\.\\.", "\n.").replace("\r", "");
       }
     }
 
