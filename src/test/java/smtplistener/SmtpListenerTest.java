@@ -1,6 +1,7 @@
 package smtplistener;
 
 import java.io.File;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -46,6 +47,7 @@ public class SmtpListenerTest
     return it;
   }
 
+
   public void testEmailCatch() throws Exception {
     assertTrue(SmtpListener.isFree(PORT));
     SmtpListener listener = new SmtpListener();
@@ -66,6 +68,13 @@ public class SmtpListenerTest
     assertFalse(SmtpListener.isFree(PORT));
     Email receivedEmail = fetchEmail(listener);
     assertTrue(receivedEmail.toString() + "\n" + toSend.toString(), receivedEmail.equals(toSend));
+
+    Map emailAsMap = listener.getLastEmailReceivedAsMap();
+    assertEquals(receivedEmail.getRecipient(), emailAsMap.get("to"));
+    assertEquals(receivedEmail.getSender(), emailAsMap.get("from"));
+    assertEquals(receivedEmail.getSubject(), emailAsMap.get("subject"));
+    assertEquals(receivedEmail.getMessage(), emailAsMap.get("message"));
+
     listener.stopListening();
     assertTrue(SmtpListener.isFree(PORT));
   }
