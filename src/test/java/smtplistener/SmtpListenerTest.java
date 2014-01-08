@@ -1,8 +1,6 @@
 package smtplistener;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.ServerSocket;
 
 import junit.framework.TestCase;
 
@@ -26,13 +24,13 @@ public class SmtpListenerTest
   }
 
   public void testUsesPort() throws Exception {
-    assertTrue(available(PORT));
+    assertTrue(SmtpListener.isFree(PORT));
     SmtpListener listener = new SmtpListener(1616);
     listener.startListening();
-    assertFalse(available(PORT));
+    assertFalse(SmtpListener.isFree(PORT));
     listener.stopListening();
     Thread.sleep(1);
-    assertTrue(available(PORT));
+    assertTrue(SmtpListener.isFree(PORT));
   }
 
   private Email fetchEmail(SmtpListener listener) throws Exception {
@@ -49,11 +47,11 @@ public class SmtpListenerTest
   }
 
   public void testEmailCatch() throws Exception {
-    assertTrue(available(PORT));
+    assertTrue(SmtpListener.isFree(PORT));
     SmtpListener listener = new SmtpListener();
     listener.startListening();
 
-    assertFalse(available(PORT));
+    assertFalse(SmtpListener.isFree(PORT));
     Email toSend = new Email(
         "sender@smtplistener",
         "root@smtplistener",
@@ -65,19 +63,19 @@ public class SmtpListenerTest
 
     Emailer.send(toSend);
 
-    assertFalse(available(PORT));
+    assertFalse(SmtpListener.isFree(PORT));
     Email receivedEmail = fetchEmail(listener);
     assertTrue(receivedEmail.toString() + "\n" + toSend.toString(), receivedEmail.equals(toSend));
     listener.stopListening();
-    assertTrue(available(PORT));
+    assertTrue(SmtpListener.isFree(PORT));
   }
 
   public void testEmailWithAttachmentsDropped() throws Exception {
-    assertTrue(available(PORT));
+    assertTrue(SmtpListener.isFree(PORT));
     SmtpListener listener = new SmtpListener();
     listener.startListening();
 
-    assertFalse(available(PORT));
+    assertFalse(SmtpListener.isFree(PORT));
     Email toSend = new Email("sender@smtplistener",
         "root@smtplistener", "Subject", "Message body");
     File [] attachments = new File[] {new File("README.md")};
@@ -90,12 +88,12 @@ public class SmtpListenerTest
         "Message body",
         attachments);
 
-    assertFalse(available(PORT));
+    assertFalse(SmtpListener.isFree(PORT));
     Email receivedEmail = fetchEmail(listener);
     assertTrue(receivedEmail.toString() + "\n" + toSend.toString(), receivedEmail.equals(toSend));
     listener.stopListening();
 
-    assertTrue(available(PORT));
+    assertTrue(SmtpListener.isFree(PORT));
   }
 
 
@@ -106,17 +104,17 @@ public class SmtpListenerTest
    *  see README.md.
    */
   public void testNotRepeatable() throws Exception {
-    assertTrue(available(PORT));
+    assertTrue(SmtpListener.isFree(PORT));
     SmtpListener listener = new SmtpListener();
     listener.startListening();
-    assertFalse(available(PORT));
+    assertFalse(SmtpListener.isFree(PORT));
     for (int i = 1; i < 3; i++) {
       Email toSend = new Email("sender" + i + "@smtplistener", 
           "root@smtplistener", "Subject " + i, "Message body" + i);
 
       Emailer.send(toSend);
 
-      assertFalse(available(PORT));
+      assertFalse(SmtpListener.isFree(PORT));
       Email receivedEmail = fetchEmail(listener);
       // Neither assertion holds
 //      assertTrue(receivedEmail.toString().equals(toSend.toString()));
@@ -126,32 +124,4 @@ public class SmtpListenerTest
     Thread.sleep(30);
   }
 
-  /**
-   * Checks to see if a specific port is available.
-   *
-   * @param port the port to check for availability
-   */
-  public static boolean available(int port) {
-    if (port < 0 || port > 65535) {
-      throw new IllegalArgumentException("Invalid start port: " + port);
-    }
-
-    ServerSocket ss = null;
-    try {
-      ss = new ServerSocket(port);
-      return true;
-    }
-    catch (IOException e) {
-      return false;
-    }
-    finally {
-      if (ss != null) {
-        try {
-          ss.close();
-        } catch (IOException e) {
-          throw new RuntimeException("I promised this could never happen", e);
-        }
-      }
-    }
-  }
 }

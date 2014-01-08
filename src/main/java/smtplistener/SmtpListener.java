@@ -102,4 +102,35 @@ public class SmtpListener implements Runnable {
   private void setListening(final boolean listening) {
     this.listening_ = listening;
   }
+
+  /**
+   * Checks to see if a specific port is isFree.
+   *
+   * @param port the port to check for availability
+   */
+  public static boolean isFree(int port) {
+    if (port < 0 || port > 65535) {
+      throw new IllegalArgumentException("Invalid start port: " + port);
+    }
+
+    ServerSocket ss = null;
+    try {
+      ss = new ServerSocket(port);
+      return true;
+    }
+    catch (IOException e) {
+      return false;
+    }
+    finally {
+      if (ss != null) {
+        try {
+          ss.close();
+        } catch (IOException e) {
+          throw new RuntimeException("I promised this could never happen", e);
+        }
+      }
+    }
+  }
+
+
 }
