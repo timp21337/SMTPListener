@@ -38,7 +38,7 @@ public class SMTPSession implements Runnable {
 
   /**
    * A handler for an SMTP session.
-   * Tested against postfix.
+   * Tested against postfix and exim.
    *
    * @param smtpIdentifier what we should report our hostname as:
    *                       this must be different from what
