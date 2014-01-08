@@ -24,6 +24,7 @@ public class SmtpListenerTest
       e = null;
     }
   }
+
   public void testUsesPort() throws Exception {
     assertTrue(available(PORT));
     SmtpListener listener = new SmtpListener(1616);
@@ -38,12 +39,10 @@ public class SmtpListenerTest
     Email it = listener.getLastEmailReceived();
     int goes = 0;
     while(it == null) {
-      System.err.println("Goes:" + goes);
       if (goes++ > 10)
         fail("Maybe you have not configured your MTA to route "
              + "smtptlistener mails to " + PORT);
       Thread.sleep(50);
-      System.err.println("Sleeping");
       it = listener.getLastEmailReceived();
     }
     return it;
@@ -55,9 +54,14 @@ public class SmtpListenerTest
     listener.startListening();
 
     assertFalse(available(PORT));
-    Email toSend = new Email("sender@smtplistener",
-        "root@smtplistener", "Subject", "Message body\r\nLine 2\r\nLine 3\r\n"
-        + ". a line starting with a dot but not the end of message\r\n");
+    Email toSend = new Email(
+        "sender@smtplistener",
+        "root@smtplistener",
+        "Subject",
+        "Message body\nLine 2\nLine 3\n\n"
+        + ". not alone\n"
+        + "\n.\n"
+        + ". a line starting with a dot but not the end of message\n");
 
     Emailer.send(toSend);
 
