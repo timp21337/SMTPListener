@@ -3,6 +3,8 @@ package smtplistener;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +95,27 @@ public class SmtpListener implements Runnable {
 
   public Email getLastEmailReceived() {
     return lastEmailReceived_;
+  }
+  public Map getLastEmailReceivedAsMap() {
+    Email it = getLastEmailReceived();
+    int goes = 0;
+    while(it == null) {
+      if (goes++ > 10)
+        return null;
+      try {
+        Thread.sleep(50);
+      }
+      catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+      it = getLastEmailReceived();
+    }
+    Map<String, String> copy = new HashMap<String, String>();
+    copy.put("to", getLastEmailReceived().getRecipient());
+    copy.put("from", getLastEmailReceived().getSender());
+    copy.put("subject", getLastEmailReceived().getSubject());
+    copy.put("message", getLastEmailReceived().getMessage());
+    return copy;
   }
 
   public boolean isListening() {
