@@ -109,21 +109,22 @@ public class SMTPSession implements Runnable {
                 data();
               }
               else {
-                if (command.regionMatches(true, 0, "RSET", 0, 4)) {
-                  reset();
-                  toClient("250 Reset state");
-                }
-                else {
+                //if (command.regionMatches(true, 0, "RSET", 0, 4)) {
+                //  reset();
+                //  toClient("250 Reset state");
+                //}
+                //else {
                   if (command.regionMatches(true, 0, "QUIT", 0, 4)) {
                     toClient("221 " + smtpIdentifier_ + " closing connection");
                     live = false;
                   }
                   // Not recognising EHLO is a good thing
+                  // No way of invoking RSET
                   // does it matter that we don't do VRFY?
                   else {
                     toClient("500 Command unrecognized: \"" + command + "\"");
                   }
-                }
+                //}
               }
             }
           }
@@ -156,13 +157,6 @@ public class SMTPSession implements Runnable {
     body_ = null;
   }
 
-  private String clean(final String address) {
-    if (address.charAt(0) == '<') {
-      return address.substring(1, address.length() - 1);
-    }
-    return address;
-  }
-
   private void toClient(String line) {
     log_.debug(LogTracker.number(line));
     toClient_.println(line);
@@ -174,7 +168,7 @@ public class SMTPSession implements Runnable {
    * @param addressFrom the address after the colon
    */
   private void mailFrom(String addressFrom) {
-    sender_ = clean(addressFrom);
+    sender_ = addressFrom;
     log_.debug(LogTracker.number("Recipient:" + recipient_));
     toClient("250 " + addressFrom + "... Sender provisionally OK");
   }
@@ -186,7 +180,7 @@ public class SMTPSession implements Runnable {
    */
 
   private void rcptTo(String addressTo) throws Exception {
-    recipient_ = clean(addressTo);
+    recipient_ = addressTo;
     log_.debug(LogTracker.number("Recipient:" + recipient_));
     toClient("250 Recipient OK");
   }
@@ -208,11 +202,7 @@ public class SMTPSession implements Runnable {
     MimeMessage message =
         new MimeMessage(Session.getDefaultInstance(System.getProperties(), null), stream);
 
-    subject_ =
-        message.getSubject() == null
-            ? "(no subject_)"
-            : message.getSubject();
-
+    subject_ = message.getSubject();
 
     StringBuffer bodyText = new StringBuffer(100);
 
