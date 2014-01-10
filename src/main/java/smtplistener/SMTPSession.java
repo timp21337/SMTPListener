@@ -25,12 +25,15 @@ public class SMTPSession implements Runnable {
 
   private static final Logger log_ = LoggerFactory.getLogger(SMTPSession.class);
   public static final int BUFFER_SIZE = 65536;
+
   private String smtpIdentifier_;
   private ServerSocket serverSocket_;
+
   private Socket clientSocket_;
   private BufferedReader fromClient_;
   private PrintWriter toClient_;
   private PushbackInputStream fromClientPushBack_;
+
   private String sender_ = null;
   private String recipient_ = null;
   private String subject_ = null;
@@ -45,11 +48,10 @@ public class SMTPSession implements Runnable {
    *                       <TT>mailer</TT> thinks it is called,
    *                       or it will fail with a loopback error
    * @param serverSocket   the socket on which <TT>mailer</TT>
-   *                       has just connected
    */
 
-  SMTPSession(String smtpIdentifier,
-              ServerSocket serverSocket) {
+  public SMTPSession(String smtpIdentifier,
+                     ServerSocket serverSocket) {
 
     this.smtpIdentifier_ = smtpIdentifier;
     this.serverSocket_ = serverSocket;
@@ -144,7 +146,7 @@ public class SMTPSession implements Runnable {
   }
 
   /**
-   * Handle an SMTP <TT>RSET</TT> command, or generally otherwise tidy up.
+   * Handle an SMTP <TT>RSET</TT> command, or otherwise tidy up.
    */
 
   private void reset() {
