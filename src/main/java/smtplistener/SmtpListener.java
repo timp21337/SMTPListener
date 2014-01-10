@@ -98,18 +98,8 @@ public class SmtpListener implements Runnable {
   }
   public Map getLastEmailReceivedAsMap() {
     Email it = getLastEmailReceived();
-    int goes = 0;
-    while (it == null) {
-      if (goes++ > 10) {
-        return null;
-      }
-      try {
-        Thread.sleep(50);
-      }
-      catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-      it = getLastEmailReceived();
+    if (it == null) {
+      return null;
     }
     Map<String, String> copy = new HashMap<String, String>();
     copy.put("to", getLastEmailReceived().getRecipient());
