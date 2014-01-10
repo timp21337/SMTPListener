@@ -131,14 +131,14 @@ public class SMTPSession implements Runnable {
     catch (Exception e) {
       toClient("554 Sorry: something is wrong with this server---"
           + e.getMessage().replace('\n', ' ').replace('\r', ' '));
-      log_.error("Post of message from `" + sender_ + "' failed:" + e.getMessage());
+      log_.error("Message from `" + sender_ + "' failed:" + e.getMessage());
     }
     finally {
       try {
         clientSocket_.close();
       }
-      catch (Exception e) {
-        log_.error("Closing error:" + e.getMessage());
+      catch (IOException e) {
+        log_.error("Error closing socket", e);
       }
     }
   }
