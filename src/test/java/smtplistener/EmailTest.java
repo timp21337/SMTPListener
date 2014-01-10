@@ -43,6 +43,11 @@ public class EmailTest extends TestCase{
 
   }
 
+  public void testNullSubject() {
+    Email empty = new Email(null, null, null, null);
+    assertEquals("(no subject)", empty.getSubject());
+    assertEquals("Email{sender_='null', recipient_='null', subject_='(no subject)', message_='null'}", empty.toString());
+  }
   public void testHashCode() throws Exception {
     Email empty = new Email(null, null, null, null);
     assertEquals(0, empty.hashCode());
