@@ -38,10 +38,16 @@ import java.io.PushbackInputStream;
 public class DotTerminatedInputStream extends FilterInputStream {
 
   private static final int UNDEFINED = -1;
+
+  private static final byte CR = 13;
+  private static final byte LF = 10;
+  private static final byte DOT = 46;
+
   // the states
   private static final int
       TEXT = 0, FIRSTCR = 1, FIRSTLF = 2, THEDOT = 3, SECONDCR = 4, TERMINATED = 5,
       POP = 6;
+
   private int state_ = FIRSTLF;
   private int expectedState_ = UNDEFINED;
   private int stashedByte_ = UNDEFINED;
@@ -49,10 +55,7 @@ public class DotTerminatedInputStream extends FilterInputStream {
   private int toPushBackIndex_ = 0;
   private int toPushBackDone_ = 0;
 
-  private static final byte CR = 13;
-  private static final byte LF = 10;
-  private static final byte DOT = 46;
-
+  private boolean echo_;
 
   /**
    * @param in the underlying stream: must be a
@@ -209,10 +212,14 @@ public class DotTerminatedInputStream extends FilterInputStream {
           throw new RuntimeException("Unexpected state:" + state_);
       }
     }
-    if (result < 14)
-      System.err.println(result);
-    else
-      System.err.print((char)result);
+    if (echo_) {
+      if (result < 14) {
+        System.err.println(result);
+      }
+      else {
+        System.err.print((char) result);
+      }
+    }
     return result;
   }
 
@@ -246,5 +253,9 @@ public class DotTerminatedInputStream extends FilterInputStream {
 
   public synchronized long skip(long n) throws IOException {
     throw new UnsupportedOperationException();
+  }
+
+  public void setEcho(boolean echo) {
+    this.echo_ = echo;
   }
 }
