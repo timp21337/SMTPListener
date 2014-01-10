@@ -99,9 +99,10 @@ public class SmtpListener implements Runnable {
   public Map getLastEmailReceivedAsMap() {
     Email it = getLastEmailReceived();
     int goes = 0;
-    while(it == null) {
-      if (goes++ > 10)
+    while (it == null) {
+      if (goes++ > 10) {
         return null;
+      }
       try {
         Thread.sleep(50);
       }
@@ -148,7 +149,8 @@ public class SmtpListener implements Runnable {
       if (ss != null) {
         try {
           ss.close();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
           throw new RuntimeException("I promised this could never happen", e);
         }
       }
