@@ -15,23 +15,13 @@ public class SmtpListenerTest
   final static int PORT = 1616;
 
   public void testStopListeningBeforeListening() {
-    SmtpListener listener = new SmtpListener(1616);
+    SmtpListener listener = new SmtpListener(PORT);
     try {
       listener.stopListening();
       fail("Should have bombed");
     } catch (RuntimeException e) {
       e = null;
     }
-  }
-
-  public void testUsesPort() throws Exception {
-    assertTrue(SmtpListener.isFree(PORT));
-    SmtpListener listener = new SmtpListener(1616);
-    listener.startListening();
-    assertFalse(SmtpListener.isFree(PORT));
-    listener.stopListening();
-    Thread.sleep(1);
-    assertTrue(SmtpListener.isFree(PORT));
   }
 
   private Email fetchEmail(SmtpListener listener) throws Exception {
@@ -131,6 +121,7 @@ public class SmtpListenerTest
     }
     listener.stopListening();
     Thread.sleep(30);
+    assertTrue(SmtpListener.isFree(PORT));
   }
 
   public void testMapIsInitiallyNull() {
@@ -140,6 +131,7 @@ public class SmtpListenerTest
     assertFalse(SmtpListener.isFree(PORT));
     assertNull(listener.getLastEmailReceived());
     assertNull(listener.getLastEmailReceivedAsMap());
+    listener.stopListening();
   }
 
   public void testIsFree() {
@@ -158,4 +150,15 @@ public class SmtpListenerTest
       e = null;
     }
   }
+
+  public void testUsesPort() throws Exception {
+    assertTrue(SmtpListener.isFree(PORT));
+    SmtpListener listener = new SmtpListener(PORT);
+    listener.startListening();
+    assertFalse(SmtpListener.isFree(PORT));
+    listener.stopListening();
+    Thread.sleep(50);
+    assertTrue(SmtpListener.isFree(PORT));
+  }
+
 }
