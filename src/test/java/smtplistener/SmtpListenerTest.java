@@ -133,4 +133,29 @@ public class SmtpListenerTest
     Thread.sleep(30);
   }
 
+  public void testMapIsInitiallyNull() {
+    assertTrue(SmtpListener.isFree(PORT));
+    SmtpListener listener = new SmtpListener();
+    listener.startListening();
+    assertFalse(SmtpListener.isFree(PORT));
+    assertNull(listener.getLastEmailReceived());
+    assertNull(listener.getLastEmailReceivedAsMap());
+  }
+
+  public void testIsFree() {
+    try {
+      SmtpListener.isFree(-1);
+      fail("Should have bombed");
+    }
+    catch (IllegalArgumentException e) {
+      e = null;
+    }
+    try {
+      SmtpListener.isFree(65536);
+      fail("Should have bombed");
+    }
+    catch (IllegalArgumentException e) {
+      e = null;
+    }
+  }
 }
