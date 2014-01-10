@@ -55,8 +55,6 @@ public class DotTerminatedInputStream extends FilterInputStream {
   private int toPushBackIndex_ = 0;
   private int toPushBackDone_ = 0;
 
-  private boolean echo_;
-
   /**
    * @param in the underlying stream: must be a
    *           <TT>PushbackInputStream</TT> because
@@ -212,14 +210,14 @@ public class DotTerminatedInputStream extends FilterInputStream {
           throw new RuntimeException("Unexpected state:" + state_);
       }
     }
-    if (echo_) {
-      if (result < 14) {
-        System.err.println(result);
-      }
-      else {
-        System.err.print((char) result);
-      }
+    /*
+    if (result < 14) {
+      System.err.println(result);
     }
+    else {
+      System.err.print((char) result);
+    }
+    */
     return result;
   }
 
@@ -255,7 +253,4 @@ public class DotTerminatedInputStream extends FilterInputStream {
     throw new UnsupportedOperationException();
   }
 
-  public void setEcho(boolean echo) {
-    this.echo_ = echo;
-  }
 }
