@@ -14,7 +14,7 @@ Configuration
 
 in /etc/hosts add:
 
-    127.0.0.1       smtplistener
+    127.0.0.1       smtplistener.local
 
 Postfix
 -------
@@ -24,7 +24,7 @@ in /etc/postfix/main.cf add:
 
 in /etc/postfix/transport add:
 
-    smtplistener smtp:localhost:1616
+    smtplistener.local smtp:localhost:1616
 
 
 then:
@@ -38,12 +38,12 @@ Exim
 ----
 in /etc/exim4/exim4.conf add in appropriate sections:
 
-    domainlist relay_to_domains = smtplistener
+    domainlist relay_to_domains = smtplistener.local
 
     begin routers
       send_to_smtplistener:
         driver = manualroute
-        route_list = smtplistener localhost
+        route_list = smtplistener.local localhost
         transport = smtplistener_transport
         self = send
 
@@ -56,6 +56,6 @@ in /etc/exim4/exim4.conf add in appropriate sections:
     begin retry
     # Address or Domain    Error       Retries
     # -----------------    -----       -------
-    smtplistener           *
+    smtplistener.local     *
     *                      *           F,2h,15m; G,16h,1h,1.5; F,4d,6h
 
