@@ -14,6 +14,12 @@ public class SmtpListenerTest
 
   final static int PORT = 1616;
 
+  String host = "smtplistener.local";
+
+  private String email(String name) {
+    return name + "@" + host;
+  }
+
   public void testStopListeningBeforeListening() {
     SmtpListener listener = new SmtpListener(PORT);
     try {
@@ -30,7 +36,7 @@ public class SmtpListenerTest
     while(it == null) {
       if (goes++ > 10)
         fail("Maybe you have not configured your MTA to route "
-             + "smtptlistener mails to " + PORT);
+             + host + " mails to " + PORT);
       Thread.sleep(50);
       it = listener.getLastEmailReceived();
     }
@@ -45,8 +51,8 @@ public class SmtpListenerTest
 
     assertFalse(SmtpListener.isFree(PORT));
     Email toSend = new Email(
-        "sender@smtplistener",
-        "root@smtplistener",
+        email("sender"),
+        email("root"),
         "Subject",
         "Message body\nLine 2\nLine 3\n\n"
         + ". not alone\n"
@@ -69,20 +75,19 @@ public class SmtpListenerTest
     assertTrue(SmtpListener.isFree(PORT));
   }
 
-  public void testEmailWithAttachmentsDropped() throws Exception {
+  public void testEmailWithAttachmentsWorks() throws Exception {
     assertTrue(SmtpListener.isFree(PORT));
     SmtpListener listener = new SmtpListener();
     listener.startListening();
-
     assertFalse(SmtpListener.isFree(PORT));
-    Email toSend = new Email("sender@smtplistener",
-        "root@smtplistener", "Subject", "Message body");
+
+    Email toSend = new Email(email("sender"), email("root"), "Subject", "Message body");
     File [] attachments = new File[] {new File("README.md")};
     Emailer.sendWithAttachments(
         "localhost",
-        "sender@smtplistener",
-        "root@smtplistener",
-        "sender@smtplistener",
+        email("sender"),
+        email("root"),
+        email("sender"),
         "Subject",
         "Message body",
         attachments);
@@ -96,28 +101,22 @@ public class SmtpListenerTest
   }
 
 
-  /** Shows that this cannot be used, as is, for repeated tests, 
-   *  but it does inch the coverage up.
-   *
-   *  Exim needs to have retrys configured off for this to work repeatedly,
-   *  see README.md.
-   */
-  public void testNotRepeatable() throws Exception {
+  public void testRepeatable() throws Exception {
     assertTrue(SmtpListener.isFree(PORT));
     SmtpListener listener = new SmtpListener();
     listener.startListening();
     assertFalse(SmtpListener.isFree(PORT));
-    for (int i = 1; i < 3; i++) {
-      Email toSend = new Email("sender" + i + "@smtplistener", 
-          "root@smtplistener", "Subject " + i, "Message body" + i);
+    for (int i = 1; i < 7; i++) {
+      Email toSend = new Email("sender" + i + "@" + host,
+          "root@" + host, "Subject " + i, "Message body" + i);
 
       Emailer.send(toSend);
 
       assertFalse(SmtpListener.isFree(PORT));
+      Thread.sleep(1000);   // Wait for delivery
       Email receivedEmail = fetchEmail(listener);
       // Neither assertion holds
-//      assertTrue(receivedEmail.toString().equals(toSend.toString()));
-//      assertFalse(receivedEmail.toString().equals(toSend.toString()));
+      assertEquals(toSend.toString(), receivedEmail.toString());
     }
     listener.stopListening();
     Thread.sleep(30);
