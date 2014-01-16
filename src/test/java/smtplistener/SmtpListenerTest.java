@@ -45,8 +45,8 @@ public class SmtpListenerTest
 
     assertFalse(SmtpListener.isFree(PORT));
     Email toSend = new Email(
-        "sender@smtplistener",
-        "root@smtplistener",
+        "sender@smtplistener.local",
+        "root@smtplistener.local",
         "Subject",
         "Message body\nLine 2\nLine 3\n\n"
         + ". not alone\n"
@@ -75,14 +75,14 @@ public class SmtpListenerTest
     listener.startListening();
 
     assertFalse(SmtpListener.isFree(PORT));
-    Email toSend = new Email("sender@smtplistener",
-        "root@smtplistener", "Subject", "Message body");
+    Email toSend = new Email("sender@smtplistener.local",
+        "root@smtplistener.local", "Subject", "Message body");
     File [] attachments = new File[] {new File("README.md")};
     Emailer.sendWithAttachments(
         "localhost",
-        "sender@smtplistener",
-        "root@smtplistener",
-        "sender@smtplistener",
+        "sender@smtplistener.local",
+        "root@smtplistener.local",
+        "sender@smtplistener.local",
         "Subject",
         "Message body",
         attachments);
@@ -108,8 +108,8 @@ public class SmtpListenerTest
     listener.startListening();
     assertFalse(SmtpListener.isFree(PORT));
     for (int i = 1; i < 3; i++) {
-      Email toSend = new Email("sender" + i + "@smtplistener", 
-          "root@smtplistener", "Subject " + i, "Message body" + i);
+      Email toSend = new Email("sender" + i + "@smtplistener.local",
+          "root@smtplistener.local", "Subject " + i, "Message body" + i);
 
       Emailer.send(toSend);
 
