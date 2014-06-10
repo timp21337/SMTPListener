@@ -14,7 +14,7 @@ public class SmtpListenerTest
 
   final static int PORT = 1616;
 
-  String host = "smtplistener.local";
+  String host = "smtplistener";
 
   private String email(String name) {
     return name + "@" + host;
