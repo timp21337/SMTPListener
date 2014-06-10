@@ -12,9 +12,6 @@ DO NOT DEPLOY ON A MACHINE RESPONSIBLE FOR REAL MAIL.
 Configuration
 =============
 
-in /etc/hosts add:
-
-    127.0.0.1       smtplistener.local
 
 Postfix
 -------
