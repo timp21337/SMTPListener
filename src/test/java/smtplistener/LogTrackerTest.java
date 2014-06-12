@@ -1,5 +1,9 @@
 package smtplistener;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+
 import junit.framework.TestCase;
 
 /**
@@ -14,5 +18,14 @@ public class LogTrackerTest extends TestCase {
       LogTracker.number("Message");
     }
     assertEquals(current, LogTracker.number("Message"));
+  }
+
+  public void testConstructorIsPrivate() throws NoSuchMethodException,
+      IllegalAccessException, InvocationTargetException, InstantiationException {
+
+    Constructor<LogTracker> constructor = LogTracker.class.getDeclaredConstructor();
+    assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+    constructor.setAccessible(true);
+    constructor.newInstance();
   }
 }
