@@ -52,10 +52,10 @@ public class Email {
     if (recipient_ != null ? !recipient_.equals(email.recipient_) : email.recipient_ != null) {
       return false;
     }
-    if (!subject_.equals(email.subject_)) {
+    if (!getSubject().equals(email.getSubject())) {
       return false;
     }
-    if (!message_.equals(email.message_)) {
+    if (getMessage() != null ? !getMessage().equals(email.getMessage()) : email.getMessage() != null) {
       return false;
     }
 
@@ -82,7 +82,7 @@ public class Email {
         + '}';
   }
 
-  private class Subject {
+  class Subject {
     private String it_;
 
     Subject(String it) {
@@ -104,30 +104,13 @@ public class Email {
     }
 
     @Override
-    public boolean equals(final Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-
-      final Subject subject = (Subject) o;
-
-      if (it_ != null ? !it_.equals(subject.it_) : subject.it_ != null) {
-        return false;
-      }
-
-      return true;
-    }
-
-    @Override
     public int hashCode() {
       return it_ != null ? it_.hashCode() : 0;
     }
+
   }
 
-  private class Message {
+  class Message {
     private String it_;
 
     Message(String it) {
@@ -136,31 +119,13 @@ public class Email {
       }
     }
 
-    @Override
-    public boolean equals(final Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-
-      final Message message = (Message) o;
-
-      if (it_ != null ? !it_.equals(message.it_) : message.it_ != null) {
-        return false;
-      }
-
-      return true;
+    public String toString() {
+      return it_;
     }
 
     @Override
     public int hashCode() {
       return it_ != null ? it_.hashCode() : 0;
-    }
-
-    public String toString() {
-      return it_;
     }
   }
 

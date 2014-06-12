@@ -6,7 +6,7 @@ import junit.framework.TestCase;
  * @author timp
  * @since 2014-01-14
  */
-public class EmailTest extends TestCase{
+public class EmailTest extends TestCase {
 
   public void testEquals() throws Exception {
     Email it = new Email("from@example.com", "to@example.com", "Subject", "Body\nLine 2");
