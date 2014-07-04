@@ -1,0 +1,1 @@
+mvn deploy   -DaltDeploymentRepository=aristaeus.ext.release.local::default::http://aristaeus.mediagraft.com:8080/ext-release-local
