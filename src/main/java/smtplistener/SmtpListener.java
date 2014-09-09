@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
  */
 public class SmtpListener implements Runnable {
 
-  private static final Logger log_ = LoggerFactory.getLogger(SmtpListener.class);
-  private static int arbetraryPortNumberOver1024 = 1616;
+  private static final Logger LOG = LoggerFactory.getLogger(SmtpListener.class);
+  private static final int PORT_NO_OVER_1024 = 1616;
 
   private int port_;
   private boolean listening_;
@@ -26,7 +26,7 @@ public class SmtpListener implements Runnable {
   private Email lastEmailReceived_;
 
   public SmtpListener() {
-    this(arbetraryPortNumberOver1024);
+    this(PORT_NO_OVER_1024);
   }
 
   public SmtpListener(int port) {
@@ -41,17 +41,17 @@ public class SmtpListener implements Runnable {
           + InetAddress.getLocalHost().getHostName();
       while (listen_) {
         setListening(true);
-        log_.debug(LogTracker.number(
+        LOG.debug(LogTracker.number(
             "Starting new session:" + smtpListenerName + " on " + serverSocket_));
         if (currentSession_ != null) {
           lastEmailReceived_ = currentSession_.getEmail();
         }
         currentSession_ = new SMTPSession(smtpListenerName, serverSocket_);
-        log_.debug(LogTracker.number(currentSession_.toString()));
+        LOG.debug(LogTracker.number(currentSession_.toString()));
         new Thread(currentSession_).run();
-        log_.debug(LogTracker.number("Finished session"));
+        LOG.debug(LogTracker.number("Finished session"));
       }
-      log_.debug(LogTracker.number("Finished serving"));
+      LOG.debug(LogTracker.number("Finished serving"));
     }
     catch (IOException e) {
       throw new RuntimeException(e);
@@ -69,7 +69,7 @@ public class SmtpListener implements Runnable {
         throw new RuntimeException(e);
       }
     }
-    log_.debug(LogTracker.number("Started listening"));
+    LOG.debug(LogTracker.number("Started listening"));
   }
 
   public void stopListening() {
@@ -86,7 +86,7 @@ public class SmtpListener implements Runnable {
       catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
-      log_.debug(LogTracker.number("Stopped listening"));
+      LOG.debug(LogTracker.number("Stopped listening"));
     }
     else {
       throw new RuntimeException("Called when not listening");
@@ -123,10 +123,6 @@ public class SmtpListener implements Runnable {
    * @param port the port to check for availability
    */
   public static boolean isFree(int port) {
-    if (port < 0 || port > 65535) {
-      throw new IllegalArgumentException("Invalid start port: " + port);
-    }
-
     ServerSocket ss = null;
     try {
       ss = new ServerSocket(port);
@@ -141,7 +137,7 @@ public class SmtpListener implements Runnable {
           ss.close();
         }
         catch (IOException e) {
-          throw new RuntimeException("I promised this could never happen", e);
+          LOG.error("Problem closing stream after error", e);
         }
       }
     }

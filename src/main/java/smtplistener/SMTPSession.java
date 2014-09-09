@@ -23,8 +23,9 @@ import org.slf4j.LoggerFactory;
 
 public class SMTPSession implements Runnable {
 
-  private static final Logger log_ = LoggerFactory.getLogger(SMTPSession.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SMTPSession.class);
   public static final int BUFFER_SIZE = 65536;
+  public static final int CAPACITY = 100;
 
   private String smtpIdentifier_;
   private ServerSocket serverSocket_;
@@ -59,16 +60,16 @@ public class SMTPSession implements Runnable {
   }
 
   public void run() {
-    log_.debug(LogTracker.number("Running session"));
+    LOG.debug(LogTracker.number("Running session"));
 
     try {
       try {
         // this blocks, waiting for input
-        log_.debug(LogTracker.number("Waiting"));
+        LOG.debug(LogTracker.number("Waiting"));
         clientSocket_ = serverSocket_.accept();
       }
       catch (java.net.SocketException e) {
-        log_.debug(LogTracker.number("Closed "));
+        LOG.debug(LogTracker.number("Closed "));
         return;
       }
       fromClientPushBack_ =
@@ -93,28 +94,29 @@ public class SMTPSession implements Runnable {
       while (live) {
         String command = fromClient_.readLine().trim();
 
-        if (command.regionMatches(true, 0, "HELO", 0, 4)) {
+        if (startsWithCaseless(command, "HELO")) {
           toClient("250 " + smtpIdentifier_);
         }
         else {
-          if (command.regionMatches(true, 0, "MAIL FROM:", 0, 10)) {
-            mailFrom(command.substring(10).trim());
+          if (startsWithCaseless(command, "MAIL FROM:")) {
+            mailFrom(command.substring("MAIL FROM:".length()).trim());
           }
           else {
-            if (command.regionMatches(true, 0, "RCPT TO:", 0, 8)) {
-              rcptTo(command.substring(8).trim());
+            if (startsWithCaseless(command, "RCPT TO:")) {
+              rcptTo(command.substring("RCPT TO:".length()).trim());
             }
             else {
-              if (command.regionMatches(true, 0, "DATA", 0, 4)) {
+              if (startsWithCaseless(command, "DATA")) {
                 data();
               }
               else {
-                //if (command.regionMatches(true, 0, "RSET", 0, 4)) {
+                if (startsWithCaseless(command, "RSET")) {
+                  toClient("500 Command unrecognized: \"" + command + "\"");
                 //  reset();
                 //  toClient("250 Reset state");
-                //}
-                //else {
-                  if (command.regionMatches(true, 0, "QUIT", 0, 4)) {
+                }
+                else {
+                  if (startsWithCaseless(command, "QUIT")) {
                     toClient("221 " + smtpIdentifier_ + " closing connection");
                     live = false;
                   }
@@ -124,7 +126,7 @@ public class SMTPSession implements Runnable {
                   else {
                     toClient("500 Command unrecognized: \"" + command + "\"");
                   }
-                //}
+                }
               }
             }
           }
@@ -134,16 +136,20 @@ public class SMTPSession implements Runnable {
     catch (Exception e) {
       toClient("554 Sorry: something is wrong with this server---"
           + e.getMessage().replace('\n', ' ').replace('\r', ' '));
-      log_.error("Message from `" + sender_ + "' failed:" + e.getMessage());
+      LOG.error("Message from `" + sender_ + "' failed:" + e.getMessage());
     }
     finally {
       try {
         clientSocket_.close();
       }
       catch (IOException e) {
-        log_.error("Error closing socket", e);
+        LOG.error("Error closing socket", e);
       }
     }
+  }
+
+  private boolean startsWithCaseless(String s, String eg) {
+    return s.regionMatches(true, 0, eg, 0, eg.length());
   }
 
   /**
@@ -158,7 +164,7 @@ public class SMTPSession implements Runnable {
   }
 
   private void toClient(String line) {
-    log_.debug(LogTracker.number(line));
+    LOG.debug(LogTracker.number(line));
     toClient_.println(line);
   }
 
@@ -169,7 +175,7 @@ public class SMTPSession implements Runnable {
    */
   private void mailFrom(String addressFrom) {
     sender_ = addressFrom;
-    log_.debug(LogTracker.number("Recipient:" + recipient_));
+    LOG.debug(LogTracker.number("Recipient:" + recipient_));
     toClient("250 " + addressFrom + "... Sender provisionally OK");
   }
 
@@ -179,9 +185,9 @@ public class SMTPSession implements Runnable {
    * @param addressTo the address after the colon
    */
 
-  private void rcptTo(String addressTo) throws Exception {
+  private void rcptTo(String addressTo) {
     recipient_ = addressTo;
-    log_.debug(LogTracker.number("Recipient:" + recipient_));
+    LOG.debug(LogTracker.number("Recipient:" + recipient_));
     toClient("250 Recipient OK");
   }
 
@@ -195,7 +201,7 @@ public class SMTPSession implements Runnable {
     messageAccept(new DotTerminatedInputStream(fromClientPushBack_));
 
     toClient("250 " + messageId + " Message accepted for delivery");
-    log_.debug(LogTracker.number("Accepted message from " + sender_ + " to " + recipient_));
+    LOG.debug(LogTracker.number("Accepted message from " + sender_ + " to " + recipient_));
   }
 
   public void messageAccept(DotTerminatedInputStream stream) throws Exception {
@@ -204,7 +210,7 @@ public class SMTPSession implements Runnable {
 
     subject_ = message.getSubject();
 
-    StringBuffer bodyText = new StringBuffer(100);
+    StringBuilder bodyText = new StringBuilder(CAPACITY);
 
     Object content = message.getContent();
     if (content instanceof String) {
@@ -224,13 +230,13 @@ public class SMTPSession implements Runnable {
             bodyText.append((String) partContent);
           }
           else {
-            log_.info("Attachment handling not implemented yet, you gave me a "
+            LOG.info("Attachment handling not implemented yet, you gave me a "
                 + content.getClass()
                 + ": " + content);
           }
         }
         else {
-          log_.info("Attachment handling not implemented yet, you gave me a "
+          LOG.info("Attachment handling not implemented yet, you gave me a "
               + content.getClass()
               + ": " + content);
         }
