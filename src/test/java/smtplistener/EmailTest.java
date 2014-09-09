@@ -40,19 +40,19 @@ public class EmailTest extends TestCase {
     assertFalse(it.equals(emptyMessage));
     assertFalse(emptyMessage.equals(it));
 
-
   }
+
 
   public void testNullSubject() {
     Email empty = new Email(null, null, null, null);
     assertEquals("(no subject)", empty.getSubject());
     assertEquals("Email{sender_='null', recipient_='null', subject_='(no subject)', message_='null'}", empty.toString());
   }
+
   public void testHashCode() throws Exception {
-    Email empty = new Email(null, null, null, null);
-    assertEquals(0, empty.hashCode());
-    Email it = new Email("to@example.com", "from@example.com", "Subject", "Body");
-    assertEquals(-93518811, it.hashCode());
+    Email one = new Email("to@example.com", "from@example.com", "Subject", "Body");
+    Email two = new Email("to@example.com", "from@example.com", "Subject", "Body");
+    assertEquals(one.hashCode(), two.hashCode());
   }
 
   public void testSubjectMayNotContainLineBreak() {
