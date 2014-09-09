@@ -226,6 +226,7 @@ public class DotTerminatedInputStream extends FilterInputStream {
   /**
    * Read some characters.
    */
+  @Override
   public synchronized int read(byte[] bytes, int off, int len) throws IOException {
     if (len < 0) {
       throw new IllegalArgumentException("Length:" + len);
