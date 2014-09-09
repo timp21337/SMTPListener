@@ -37,44 +37,8 @@ public class Email {
   }
 
 
-  @Override
-  public boolean equals(final Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    final Email email = (Email) o;
-
-    if (sender_ != null ? !sender_.equals(email.sender_) : email.sender_ != null) {
-      return false;
-    }
-    if (recipient_ != null ? !recipient_.equals(email.recipient_) : email.recipient_ != null) {
-      return false;
-    }
-    if (!getSubject().equals(email.getSubject())) {
-      return false;
-    }
-    if (getMessage() == null ? email.getMessage() != null : !getMessage().equals(email.getMessage())) {
-      return false;
-    }
-
-    return true;
-  }
 
   @Override
-  public int hashCode() {
-    int result = sender_ != null ? sender_.hashCode() : 0;
-    result = MAGIC_NUMBER * result + (recipient_ != null ? recipient_.hashCode() : 0);
-    result = MAGIC_NUMBER * result + subject_.toString().hashCode();
-    result = MAGIC_NUMBER * result + message_.toString().hashCode();
-    return result;
-  }
-
-  @Override
-
   public String toString() {
     return "Email{"
         + "sender_='" + sender_ + '\''
