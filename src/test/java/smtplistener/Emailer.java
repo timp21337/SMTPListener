@@ -62,7 +62,7 @@ public class Emailer {
    */
   public static void send(String smtpServer, String from, String to,
                           String replyto, String subject, String text)
-      throws IOException {
+    {
     File[] empty = {};
     sendWithAttachments(smtpServer, from, to, replyto, subject, text, empty);
   }
@@ -85,7 +85,7 @@ public class Emailer {
                                          String subject,
                                          String text,
                                          File[] attachments)
-      throws IOException {
+    {
 
     // Construct the message
     Message message = initialiseMessage(smtpServer, from, to, replyTo, subject);
@@ -95,8 +95,7 @@ public class Emailer {
       mbp1.setText(text);
       Multipart mp = new MimeMultipart();
       mp.addBodyPart(mbp1);
-      for (int i = 0; i < attachments.length; i++) {
-        File f = attachments[i];
+      for (File f : attachments) {
         if (f != null) {
           // create the second message part
           MimeBodyPart mbp2 = new MimeBodyPart();
@@ -138,7 +137,7 @@ public class Emailer {
                                                String htmlText,
                                                File[] referenced,
                                                File[] attachments)
-      throws IOException {
+      {
 
     // Construct the message
     Message message = initialiseMessage(smtpServer, from, to, replyto, subject);
@@ -153,8 +152,7 @@ public class Emailer {
       mp.addBodyPart(mbp2);
 
       if (referenced != null) {
-        for (int i = 0; i < referenced.length; i++) {
-          File f = referenced[i];
+        for (File f : referenced) {
           if (f != null) {
             MimeBodyPart mbp3 = new MimeBodyPart();
             FileDataSource fds = new FileDataSource(f);
@@ -165,13 +163,9 @@ public class Emailer {
         }
       }
       if (attachments != null) {
-        for (int i = 0; i < attachments.length; i++) {
-          File f = attachments[i];
+        for (File f : attachments) {
           if (f != null) {
             MimeBodyPart mbp4 = new MimeBodyPart();
-            if (f.getName() == null) {
-              System.out.println("name is null");
-            }
             FileDataSource fds = new FileDataSource(f);
             mbp4.setDataHandler(new DataHandler(fds));
             mbp4.setFileName(fds.getName());

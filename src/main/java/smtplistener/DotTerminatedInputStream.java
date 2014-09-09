@@ -51,7 +51,9 @@ public class DotTerminatedInputStream extends FilterInputStream {
   private int state_ = FIRSTLF;
   private int expectedState_ = UNDEFINED;
   private int stashedByte_ = UNDEFINED;
-  private byte[] toPushBack_ = new byte[4];
+
+  private static final int PUSHBACK = 4;
+  private byte[] toPushBack_ = new byte[PUSHBACK];
   private int toPushBackIndex_ = 0;
   private int toPushBackDone_ = 0;
 
@@ -224,7 +226,7 @@ public class DotTerminatedInputStream extends FilterInputStream {
   /**
    * Read some characters.
    */
-  public synchronized int read(byte[] b, int off, int len) throws IOException {
+  public synchronized int read(byte[] bytes, int off, int len) throws IOException {
     if (len < 0) {
       throw new IllegalArgumentException("Length:" + len);
     }
@@ -236,7 +238,7 @@ public class DotTerminatedInputStream extends FilterInputStream {
     if (c == UNDEFINED) {
       return UNDEFINED;
     }
-    b[off] = (byte) c;
+    bytes[off] = (byte) c;
 
     int i = 1;
     for (; i < len; i++) {
@@ -244,7 +246,7 @@ public class DotTerminatedInputStream extends FilterInputStream {
       if (c == UNDEFINED) {
         break;
       }
-      b[off + i] = (byte) c;
+      bytes[off + i] = (byte) c;
     }
     return i;
   }
