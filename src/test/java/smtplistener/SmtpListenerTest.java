@@ -63,7 +63,7 @@ public class SmtpListenerTest
 
     assertFalse(SmtpListener.isFree(PORT));
     Email receivedEmail = fetchEmail(listener);
-    assertTrue(receivedEmail.toString() + "\n" + toSend.toString(), equalEmails(receivedEmail,toSend));
+    assertTrue(receivedEmail.toString() + "\n" + toSend.toString(), equal(receivedEmail, toSend));
 
     Map emailAsMap = listener.getLastEmailReceivedAsMap();
     assertEquals(receivedEmail.getRecipient(), emailAsMap.get("to"));
@@ -94,7 +94,7 @@ public class SmtpListenerTest
 
     assertFalse(SmtpListener.isFree(PORT));
     Email receivedEmail = fetchEmail(listener);
-    assertTrue(receivedEmail.toString() + "\n" + toSend.toString(), equalEmails(receivedEmail, toSend));
+    assertTrue(receivedEmail.toString() + "\n" + toSend.toString(), equal(receivedEmail, toSend));
     listener.stopListening();
 
     assertTrue(SmtpListener.isFree(PORT));
@@ -164,7 +164,7 @@ public class SmtpListenerTest
     assertTrue(null == null);
   }
 
-  public boolean equalEmails(Email one, Email two) {
+  public boolean equal(Email one, Email two) {
     if (one == two) {
       return true;
     }
