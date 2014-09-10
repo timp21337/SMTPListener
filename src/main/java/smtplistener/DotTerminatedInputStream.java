@@ -37,16 +37,17 @@ import java.io.PushbackInputStream;
  */
 public class DotTerminatedInputStream extends FilterInputStream {
 
-  private static final int END_OF_STREAM = -1;
 
   private static final byte CR = 13;
   private static final byte LF = 10;
   private static final byte DOT = 46;
 
+  // special state, also returned from Super
+  private static final int END_OF_STREAM = -1;
   // the states
   private static final int
-      TEXT = 0, FIRSTCR = 1, FIRSTLF = 2, THEDOT = 3, SECONDCR = 4, TERMINATED = 5,
-      POP = 6;
+      TEXT = 0, FIRSTCR = 1, FIRSTLF = 2, THEDOT = 3, SECONDCR = 4,
+      TERMINATED = 5, POP = 6;
 
   private int state_ = FIRSTLF;
   private int expectedState_ = END_OF_STREAM;
