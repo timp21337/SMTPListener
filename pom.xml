@@ -27,7 +27,19 @@
     <sonar.host.url>
       http://hades:9000
     </sonar.host.url>
-    <sonar.jacoco.utReportPath>${project.basedir}/target/coverage-reports/jacoco.exec</sonar.jacoco.utReportPath>
+    <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+    <sonar.surefire.reportsPath>
+      ${project.build.directory}/surefire-reports
+    </sonar.surefire.reportsPath>
+    <!--
+    <sonar.java.coveragePlugin>cobertura</sonar.java.coveragePlugin>
+    <sonar.cobertura.reportPath>
+      ${project.build.directory}/site/cobertura/coverage.xml
+    </sonar.cobertura.reportPath>
+    -->
+    <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+    <sonar.jacoco.reportPath>${project.basedir}/target/coverage-reports/jacoco.exec</sonar.jacoco.reportPath>
+    <sonar.jacoco.reportPath>${project.basedir}/target/coverage-reports/jacoco.exec</sonar.jacoco.reportPath>
   </properties>
 
   <dependencies>
