@@ -37,7 +37,7 @@ import java.io.PushbackInputStream;
  */
 public class DotTerminatedInputStream extends FilterInputStream {
 
-  private static final int UNDEFINED = -1;
+  private static final int END_OF_STREAM = -1;
 
   private static final byte CR = 13;
   private static final byte LF = 10;
@@ -49,8 +49,8 @@ public class DotTerminatedInputStream extends FilterInputStream {
       POP = 6;
 
   private int state_ = FIRSTLF;
-  private int expectedState_ = UNDEFINED;
-  private int stashedByte_ = UNDEFINED;
+  private int expectedState_ = END_OF_STREAM;
+  private int stashedByte_ = END_OF_STREAM;
 
   private static final int PUSHBACK = 4;
   private byte[] toPushBack_ = new byte[PUSHBACK];
@@ -69,31 +69,64 @@ public class DotTerminatedInputStream extends FilterInputStream {
   }
 
   private int superRead() throws IOException {
-    if (stashedByte_ == UNDEFINED) {
+    if (stashedByte_ == END_OF_STREAM) {
       return super.read();
     }
-    int it = stashedByte_;
-    stashedByte_ = UNDEFINED;
-    return it;
+    else {
+      int it = stashedByte_;
+      stashedByte_ = END_OF_STREAM;
+      return it;
+    }
   }
 
 
   /**
    * Read a character.
    *
-   * @return a character or UNDEFINED if terminated.
+   * @return a character or END_OF_STREAM if terminated.
    */
   public synchronized int read() throws IOException {
     int b;
-    int result = UNDEFINED;
+    int result = END_OF_STREAM;
     boolean done = false;
     while (!done) {
       switch (state_) {
+        // initial state
+        case FIRSTLF:
+          b = superRead();
+          switch (b) {
+            case '.':
+              state_ = THEDOT;
+              toPushBack_[toPushBackIndex_++] = DOT;
+              break;
+            case '\n':
+              state_ = POP;
+              expectedState_ = TEXT;
+              stashedByte_ = '\n';
+              break;
+            case '\r':
+              state_ = POP;
+              expectedState_ = TEXT;
+              stashedByte_ = '\r';
+              break;
+            case END_OF_STREAM:
+              state_ = POP;
+              expectedState_ = TERMINATED;
+              break;
+            default:
+              state_ = POP;
+              expectedState_ = TEXT;
+              stashedByte_ = b;
+              break;
+          }
+          break;
+
         case TERMINATED:
           toPushBack_ = null;
-          result = UNDEFINED;
+          result = END_OF_STREAM;
           done = true;
           break;
+
         case POP:
           if (toPushBackDone_ < toPushBackIndex_) {
             result = toPushBack_[toPushBackDone_++];
@@ -116,7 +149,7 @@ public class DotTerminatedInputStream extends FilterInputStream {
               state_ = FIRSTLF;
               toPushBack_[toPushBackIndex_++] = LF;
               break;
-            case UNDEFINED:
+            case END_OF_STREAM:
               state_ = POP;
               expectedState_ = TERMINATED;
               break;
@@ -139,36 +172,7 @@ public class DotTerminatedInputStream extends FilterInputStream {
               expectedState_ = TEXT;
               stashedByte_ = '\r';
               break;
-            case UNDEFINED:
-              state_ = POP;
-              expectedState_ = TERMINATED;
-              break;
-            default:
-              state_ = POP;
-              expectedState_ = TEXT;
-              stashedByte_ = b;
-              break;
-          }
-          break;
-
-        case FIRSTLF:
-          b = superRead();
-          switch (b) {
-            case '.':
-              state_ = THEDOT;
-              toPushBack_[toPushBackIndex_++] = DOT;
-              break;
-            case '\n':
-              state_ = POP;
-              expectedState_ = TEXT;
-              stashedByte_ = '\n';
-              break;
-            case '\r':
-              state_ = POP;
-              expectedState_ = TEXT;
-              stashedByte_ = '\r';
-              break;
-            case UNDEFINED:
+            case END_OF_STREAM:
               state_ = POP;
               expectedState_ = TERMINATED;
               break;
@@ -189,7 +193,7 @@ public class DotTerminatedInputStream extends FilterInputStream {
             case '\r':
               state_ = SECONDCR;
               break;
-            case UNDEFINED:
+            case END_OF_STREAM:
               state_ = POP;
               expectedState_ = TERMINATED;
               break;
@@ -208,18 +212,11 @@ public class DotTerminatedInputStream extends FilterInputStream {
           }
           state_ = TERMINATED;
           break;
+
         default:
           throw new RuntimeException("Unexpected state:" + state_);
       }
     }
-    /*
-    if (result < 14) {
-      System.err.println(result);
-    }
-    else {
-      System.err.print((char) result);
-    }
-    */
     return result;
   }
 
@@ -236,15 +233,15 @@ public class DotTerminatedInputStream extends FilterInputStream {
     }
 
     int c = read();
-    if (c == UNDEFINED) {
-      return UNDEFINED;
+    if (c == END_OF_STREAM) {
+      return END_OF_STREAM;
     }
     bytes[off] = (byte) c;
 
-    int i = 1;
-    for (; i < len; i++) {
+    int i;
+    for (i = 1; i < len; i++) {
       c = read();
-      if (c == UNDEFINED) {
+      if (c == END_OF_STREAM) {
         break;
       }
       bytes[off + i] = (byte) c;
