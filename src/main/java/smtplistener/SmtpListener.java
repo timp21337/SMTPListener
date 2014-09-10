@@ -126,20 +126,11 @@ public class SmtpListener implements Runnable {
     ServerSocket ss = null;
     try {
       ss = new ServerSocket(port);
+      ss.close();
       return true;
     }
     catch (IOException e) {
       return false;
-    }
-    finally {
-      if (ss != null) {
-        try {
-          ss.close();
-        }
-        catch (IOException e) {
-          LOG.error("Problem closing stream after error", e);
-        }
-      }
     }
   }
 
