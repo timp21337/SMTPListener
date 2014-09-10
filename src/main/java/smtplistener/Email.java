@@ -6,7 +6,6 @@ package smtplistener;
  * @since 2013-12-19
  */
 public class Email {
-  private static final int MAGIC_NUMBER = 31;
 
   private String sender_;
   private String recipient_;
